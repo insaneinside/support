@@ -1,0 +1,23 @@
+## Ignore list for ~/devel/support
+
+# ...those pesky pre-revision-control *~ backup files
+*~
+*.bak
+
+# ...build directory
+build
+
+# ...generated documentation
+doc/*
+
+# ...package configuration cache
+.pkgconf.cache
+
+# ...rules cache
+.rules.cache
+
+# ...generated dependency file
+.depends
+
+# ..."clean" target lockfile
+.clean-lock

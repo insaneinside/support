@@ -1,0 +1,27 @@
+;; Object list/
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "list/"
+  :tables (list 
+   (semanticdb-table "list.c"
+    :major-mode 'c-mode
+    :tags '(("stdio.h" include (:system-flag t) nil [1 19]) ("malloc.h" include (:system-flag t) nil [20 39]) ("string.h" include (:system-flag t) nil [40 59]) ("list.h" include nil nil [61 78]) ("_func_depth" variable (:dereference 1 :type "char") nil [80 102]) ("INC_DEPTH" variable (:constant-flag t :default-value (nil)) nil [104 156]) ("DEC_DEPTH" variable (:constant-flag t :default-value (nil)) nil [161 215]) ("MSG_START" variable (:constant-flag t :default-value (nil)) nil [222 295]) ("INC_DEPTH" function (:prototype-flag t :type "int") nil [298 310]) ("MSG_FINIS" variable (:constant-flag t :default-value (nil)) nil [312 348]) ("fprintf" function (:prototype-flag t :arguments (("" variable (:type ("stderr" type (:type "class") nil nil)) (reparse-symbol arg-sub-list) [359 366]) ("" variable (:type ("_func_depth" type (:type "class") nil nil)) (reparse-symbol arg-sub-list) [383 395]) ("" variable (:type ("str" type (:type "class") nil nil)) (reparse-symbol arg-sub-list) [395 399])) :type "int") nil [351 400]) ("list_new" function (:pointer 2 :type "void") nil [450 618]) ("list_size" function (:arguments (("list" variable (:pointer 2 :type "void") (reparse-symbol arg-sub-list) [684 697])) :type "int") nil [670 811]) ("list_add" function (:arguments (("list" variable (:pointer 2 :type "void") (reparse-symbol arg-sub-list) [918 930])) :type "void") nil [904 1223]) ("list_insert" function (:arguments (("list" variable (:pointer 2 :type "void") (reparse-symbol arg-sub-list) [1376 1388]) ("ptr" variable (:pointer 1 :type "void") (reparse-symbol arg-sub-list) [1389 1399]) ("pos" variable (:type "int") (reparse-symbol arg-sub-list) [1400 1408])) :type "void") nil [1359 1810]) ("list_set" function (:arguments (("list" variable (:pointer 2 :type "void") (reparse-symbol arg-sub-list) [1878 1890]) ("ptr" variable (:pointer 1 :type "void") (reparse-symbol arg-sub-list) [1891 1901]) ("pos" variable (:type "int") (reparse-symbol arg-sub-list) [1902 1910])) :type "void") nil [1864 2084]) ("list_delete" function (:arguments (("list" variable (:pointer 2 :type "void") (reparse-symbol arg-sub-list) [2206 2218]) ("pos" variable (:type "int") (reparse-symbol arg-sub-list) [2219 2227])) :type "void") nil [2189 2586]) ("list_append" function (:arguments (("dest" variable (:pointer 2 :type "void") (reparse-symbol arg-sub-list) [2655 2667]) ("src" variable (:pointer 2 :type "void") (reparse-symbol arg-sub-list) [2668 2679])) :type "void") nil [2638 3162]) ("list_get" function (:pointer 1 :arguments (("list" variable (:pointer 2 :type "void") (reparse-symbol arg-sub-list) [3323 3335]) ("pos" variable (:type "int") (reparse-symbol arg-sub-list) [3336 3344])) :type "void") nil [3308 3615]))
+    :file "list.c"
+    :pointmax 3616
+    )
+   (semanticdb-table "Makefile"
+    :major-mode 'makefile-mode
+    :tags '(("CC" variable (:default-value ("gcc")) nil [1 8]) ("CFLAGS" variable (:default-value ("-Wall" "-O2")) nil [8 25]) ("LDFLAGS" variable nil nil [25 34]) ("OUT" variable (:default-value ("list-test")) nil [35 49]) ("all" function (:arguments ("$(OUT)")) nil [51 64]) ("list-test" function (:arguments ("list-test.o" "list.o")) nil [65 121]))
+    :file "Makefile"
+    :pointmax 121
+    )
+   (semanticdb-table "list-test.c"
+    :major-mode 'c-mode
+    :tags '(("stdio.h" include (:system-flag t) nil [1 19]) ("list.h" include nil nil [20 37]) ("printlist" function (:arguments (("list" variable (:pointer 2 :type "void") (reparse-symbol arg-sub-list) [54 66]) ("title" variable (:pointer 1 :type "char") (reparse-symbol arg-sub-list) [67 79])) :type "void") nil [39 211]) ("create_land" function (:pointer 2 :type "void") nil [213 1678]) ("create_sea" function (:pointer 2 :type "void") nil [1680 3045]) ("main" function (:arguments (("argc" variable (:type "int") (reparse-symbol arg-sub-list) [3056 3065]) ("argv" variable (:pointer 2 :type "char") (reparse-symbol arg-sub-list) [3066 3078])) :type "int") nil [3047 3617]))
+    :file "list-test.c"
+    :pointmax 3618
+    )
+    )
+  :file "semantic.cache"
+  :semantic-tag-version "2.0beta3"
+  :semanticdb-version "2.0beta3"
+  )
