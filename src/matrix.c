@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>		/* for prinf() */
 #include <string.h>		/* for memset() */
 #include <assert.h>
 #include <stdarg.h>
