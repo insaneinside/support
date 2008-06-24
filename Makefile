@@ -7,6 +7,6 @@ $(call require,support)
 
 SUBDIRS:=src
 export ALTERNATE_SUFFIXES:=pic
-all: pic
+build: pic
 
 $(call finalize)
