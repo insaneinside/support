@@ -5,6 +5,8 @@ include $(HOME)/devel/mk/bootstrap.mk
 
 $(call require,support)
 
-SUBDIRS:=src tests
+SUBDIRS:=src
+export ALTERNATE_SUFFIXES:=pic
+all: pic
 
 $(call finalize)
