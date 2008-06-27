@@ -14,11 +14,17 @@ extern "C"
   typedef char* string_t;
   typedef void* ptr_t;
 
+#ifndef __cplusplus
+  /** Enable use of the bool type in plain C.
+   *
+   * @warning This is probably not portable.
+   */
   typedef enum
     {
-      FALSE = 0,
-      TRUE = 1
-    } bool_t;
+      false = 0,
+      true = 1
+    } bool;
+#endif
 
 #ifdef __cplusplus
 }
