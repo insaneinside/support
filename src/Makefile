@@ -5,14 +5,16 @@ include $(HOME)/devel/mk/bootstrap.mk
 
 $(call require,support)
 
-ALTERNATE_SUFFIXES:=pic debug
-build: pic debug
-
 TARGETS:=libsupport.a
+
+libsupport_a_SUFFIXES:=debug pic pic_debug
+libsupport_pic_a_SUFFIXES:=debug pic pic_debug
+build: debug pic pic_debug
+
 CFLAGS_ADD:=$(SUPPORT_CFLAGS)
 
-libsupport_a_SOURCES:=ref.cc dllist.c hash_table.c meta.c mlog.c strutils.c	\
-		      vector.c ini.c matrix.c
+libsupport_a_SOURCES:=ref.cc dllist.c hash_table.c mlog.c strutils.c	\
+		      vector.c matrix.c #ini.c meta.c
 
 $(call finalize)
 
