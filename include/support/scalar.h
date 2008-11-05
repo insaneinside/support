@@ -27,16 +27,16 @@ extern "C" {
   /*@{*/
 #define S_EQ(a,b) 	S_ABS((a) - (b)) < S_SLOP
 #define S_NE(a,b)	S_ABS((a) - (b)) >= S_SLOP
-#define S_NONZERO(a)	( a >= S_SLOP || a <= -S_SLOP ) //S_ABS(a) >= S_SLOP )
+#define S_NONZERO(a)	( a >= S_SLOP || a <= -S_SLOP ) /* S_ABS(a) >= S_SLOP ) */
 
 #define S_ZERO(a) 	(S_ABS(a) < S_SLOP)
 
 #define S_LT0(a)	( a < 0 )
 #define S_GT0(a)	( a > 0 )
 
-#define S_LT(a,b) 	( a < b ) //S_LT0(a - b)
+#define S_LT(a,b) 	( a < b ) /* S_LT0(a - b) */
 #define S_LTE(a,b) 	(a) <= (b)
-#define S_GT(a,b) 	( a > b ) //S_LT0(b - a)
+#define S_GT(a,b) 	( a > b ) /* S_LT0(b - a) */
 #define S_GTE(a,b) 	((a) >= (b))
   /*@}*/
 #define S_SIGNBIT(n)	std::signbit(n)
