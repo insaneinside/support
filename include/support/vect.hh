@@ -626,6 +626,8 @@ namespace spt
     }
 
 
+    /** Transform the vector to a unit vector, in-place.
+     */
     void
     normalize()
     {
@@ -648,6 +650,7 @@ namespace spt
       return;
     }
 
+    /** Get the unit vector with the same direction as this vector. */
     Vec<_N>
     unit()
     {
@@ -677,17 +680,17 @@ namespace spt
     Vec<_N>
     unit() const
     {
-      scalar_t m = mag();
+      scalar_t m(mag());
 
       if ( S_EQ(m, 1.0) ||
 	   m < S_SLOP )
 	return *this;
 
-      Vec<_N> o = *this;
+      unsigned int i;
+      Vec<_N> o;
 
-      o._M_val[0] /= m;
-      o._M_val[1] /= m;
-      o._M_val[2] /= m;
+      for ( i = 0; i < _N; i++ )
+	o._M_val[i] = _M_val[i] / m;
 
 #ifdef USE_DEBUG
       assert(S_EQ(o.compute_mag(), 1.0));
@@ -702,7 +705,7 @@ namespace spt
   
 
     /** @bug Possible buffer overflow for template parameter _N
-     *	greater than BUFSIZ.
+     *	greater than BUFSIZ.  Unlikely, but possible.
      */
     const char*
     to_s() const

@@ -2,6 +2,7 @@
 #define SUPPORT_CONFIG_H
 
 #define VECT_CACHE_MAGNITUDE
+#define ENABLE_MLOG_CONTEXT
 
 #if !defined S_TYPE_FLOAT && !defined S_TYPE_DOUBLE && !defined S_TYPE_LONG_DOUBLE
 #define S_TYPE_FLOAT
