@@ -1,6 +1,13 @@
 #ifndef SUPPORT_DLLIST_H
 #define SUPPORT_DLLIST_H
 
+#include <stdint.h>
+
+/** @defgroup dllist Double-linked lists
+ *@{
+ */
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -14,10 +21,16 @@ extern "C"
 
     struct _dllist* next;
     struct _dllist* prev;
+    uint32_t magic;
   } dllist_t;
 
 #define dllist_next(node) ((*node).next)
 #define dllist_prev(node) ((*node).prev)
+
+#define DLLIST_MAGIC  ( ( 'D' << 3 ) + ( 'L' << 2 ) + ( 'S' << 1 ) + 'T' )
+#define DLLIST_IS_NODE(n) \
+  ( n && *((uint32_t*) n + offsetof(dllist_t, magic)) == DLLIST_MAGIC )
+/* #define DLLIST_IS_NODE(n) (n) */
 
   typedef int (*dllist_func) (dllist_t* , const void*);
 
@@ -141,4 +154,5 @@ extern "C"
 }
 #endif
 
+/**@}*/
 #endif /* SUPPORT_DLLIST_H */

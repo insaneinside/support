@@ -1,12 +1,32 @@
 #include <malloc.h>
 #include <assert.h>
+#include <string.h>
 #include <support/dllist.h>
+#include <support/mlog.h>
+
+#ifdef DLLIST_DEBUG
+#define DEBUG(x) x
+#else
+#define DEBUG(x)
+#endif
 
 /* local functions */
+void
+dllist_free_node(dllist_t* node)
+{
+  DEBUG(mlog(V_DEBUG | F_NONEWLINE, "%s: freeing %p... ", __func__, node);)
+  if ( node )//DLLIST_IS_NODE(node) )
+    {
+      node->magic = 0;
+      free(node);
+    }
+  DEBUG(mlog(V_DEBUG, "done.");)
+}
+
 static int
 _fe_list_free(dllist_t* node, const void* userdata)
 {
-  free(node);
+  dllist_free_node(node);
   return 1;
 }
 
@@ -36,10 +56,17 @@ dllist_alloc()
 {
   dllist_t* out;
   out = (dllist_t* ) malloc(sizeof(dllist_t));
-
+  if ( ! out )
+    {
+      mlog(V_ERR | F_ERRNO, "%s: malloc", __func__);
+      return NULL;
+    }
+  DEBUG(mlog(V_DEBUG, "%s: allocated %p", __func__, out);)
   out->prev = NULL;
   out->next = NULL;
   out->data = NULL;
+
+  out->magic = DLLIST_MAGIC;
 
   return out;
 }
@@ -59,7 +86,7 @@ dllist_append(dllist_t* list, void* data)
 {
   dllist_t* last;
 
-  if ( list )
+  if ( list )//DLLIST_IS_NODE(list) )
     {
       last = dllist_last(list);
 
@@ -71,7 +98,7 @@ dllist_append(dllist_t* list, void* data)
     list = dllist_node(data);	/* new list */
 
 
-  return list;			/* start has not changed */
+  return list;
 }
 
 
@@ -155,7 +182,11 @@ dllist_remove_node(dllist_t* list, dllist_t* node)
 dllist_t* 
 dllist_remove(dllist_t* list, const void* data)
 {
-  return dllist_remove(list, dllist_find(list, data));
+  dllist_t* node = dllist_find(list, data);
+  if ( node )
+    return dllist_remove_node(list, node);
+  else
+    return list;
 }
 
 
@@ -239,7 +270,6 @@ dllist_first(dllist_t* node)
 
 dllist_t* dllist_last(dllist_t* node)
 {
-  /* assert(node != NULL); */
   if(!node)
     return NULL;
 
@@ -272,7 +302,7 @@ dllist_size(dllist_t* list)
 void
 dllist_free(dllist_t* list)
 {
-  if(!list)
+  if ( ! list )//DLLIST_IS_NODE(list) )
     return ;
 
   dllist_foreach(list, &_fe_list_free, NULL);
@@ -285,8 +315,9 @@ dllist_foreach(dllist_t* list, dllist_func foreachfunc, const void* userdata)
   dllist_t* node, *next;
   node = dllist_first(list);
 
-  if(!list)
+  if ( ! list )//DLLIST_IS_NODE(list) )
     return;
+
   do {
     /* Save the pointer to the next node _before_ we call
      * the user function, in case it removes the current
