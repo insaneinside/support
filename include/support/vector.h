@@ -10,6 +10,8 @@ extern "C" {
 
 #include <stdlib.h>		/* for alloca() */
 
+#define SV_STRBUFSIZ	64
+
 #define SV_TYPE		scalar_t[4]
 #define SV_NAMED(n)	scalar_t n[4]
 #define SV_NEW(x,y,z)	{ x, y, z, S_SQRT(SQ(x) + SQ(y) + SQ(y)) }
@@ -21,9 +23,9 @@ extern "C" {
 #define SV_NORMALIZE(v)	v[3] = V_CALC_MAG(v), v[0] /= v[3], v[1] /= v[3], v[2] /= v[3], v[3] = 1.0
 
 #ifdef __cplusplus
-#define SV_STR(v)	vec_simple_str(v, static_cast<char*>(alloca(16)))
+#define SV_STR(v)	svec2str(v, SV_STRBUFSIZ, static_cast<char*>(alloca(SV_STRBUFSIZ)), NULL)
 #else
-#define SV_STR(v)	vec_simple_str(v, (char *) alloca(16))
+#define SV_STR(v)	vec_simple_str(v, (char *) alloca(SV_STRBUFSIZ), NULL)
 #endif
 
 #define SV_DOTP(u, v)	( u[0] * v[0] + u[1] * v[1] + u[2] * v[2] )
@@ -37,8 +39,8 @@ extern "C" {
 
 
 /* #define V_EQ(u, v)	( S_EQ(u[3], v[3]) || ( S_EQ(u[0], v[0]) &&\ */
-/* 						S_EQ(u[1], v[1]) &&\ */
-/* 						S_EQ(u[2], v[2]) ) ) */
+/*						S_EQ(u[1], v[1]) &&\ */
+/*						S_EQ(u[2], v[2]) ) ) */
 
 #define SV_NE(u, v)	!SV_EQ(u, v)
 
@@ -51,7 +53,44 @@ extern "C" {
   typedef SV_NAMED(svdir_t);
   typedef SV_NAMED(svpos_t);
 
-  char* vec_simple_str(const svec_t v, char* buf);
+  /** Wrapper for vec_simple_str.
+   *
+   * @return buf
+   */
+  char*
+  svec2str(const svec_t v, const size_t bufsiz, char* buf, const char* format);
+
+  /** Format a simple vector as a string.
+   *
+   * @param v Vector to represent as a string
+   *
+   * @param bufsiz Maximum number of characters in the buffer (@c buf
+   * argument) to use.
+   *
+   * @param buf Character buffer in which to store the generated
+   * string.
+   *
+   * @param format printf-style format string.
+   *
+   * @return Total number of characters that would have been used if
+   * no restriction were placed on the number of characters to use.
+   * If this is different from @c bufsiz, the string is not a complete
+   * representation of the vector.
+   */
+  int
+  vec_simple_str(const svec_t v, const size_t bufsiz, char* buf, const char* format);
+
+
+  /** Parse a string representation of a vector.
+   *
+   * @param input Input string.
+   *
+   * @param dest Pointer to the vector into which to store the result.
+   *
+   * @param format scanf-style format string.
+   */
+  int
+  vec_from_string(const char* input, svec_t* dest, const char* format);
 
 
 #ifdef __cplusplus
