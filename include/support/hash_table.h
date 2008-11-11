@@ -21,8 +21,8 @@ typedef enum
   } hash_return_t;
 
 
-/* take a key and return a hash unique to that key
- * this function is always required by a hash table.
+/** Take a key and return a hash unique to that key.  This function is
+ * always required by a hash table.
  */
 typedef hash_t (*hash_makehash_func_t) (void *key);
 
@@ -54,20 +54,29 @@ typedef struct
 hash_table_t*
 hash_table_new(hash_makehash_func_t hashfunc/*, hash_makedata_func_t datafunc*/);
 
+/** Free a table and all memory used by it.
+ */
 void
-hash_table_free(hash_table_t *table); /* free a table and all memory used by it */
+hash_table_free(hash_table_t *table);
 
+/** return value corresponding to key */
 void*
-hash_table_get_value(hash_table_t *table, void *key); /* return value corresponding to key */
+hash_table_get_value(hash_table_t *table, void *key); 
 
+/** Return kv_pair structure pointer corresponding to key.
+ */
 void*
-hash_table_get_pair(hash_table_t *table, void *key); /* return kv_pair structure pointer corresponding to key */
+hash_table_get_pair(hash_table_t *table, void *key);
 
+/** Add a key/value pair to the table.
+ */
 hash_return_t
-hash_table_add(hash_table_t *table, void *key, void *value);	/* add a key/value pair to the table */
+hash_table_add(hash_table_t *table, void *key, void *value);
 
+/** Remove a key/value pair from the table.
+ */
 hash_return_t
-hash_table_del(hash_table_t *table, void *key); /* remove a key/value pair from the table */
+hash_table_del(hash_table_t *table, void *key);
 
 
 #endif /* SUPPORT_HASH_TABLE_H */

@@ -67,7 +67,7 @@ hash_table_get_pair(hash_table_t *table, void *key)
 }
   
 
-int
+hash_return_t
 hash_table_add(hash_table_t *table, void *key, void *value)
 {
   hash_pair_t *pair;
@@ -94,7 +94,7 @@ hash_table_add(hash_table_t *table, void *key, void *value)
     }
 }
     
-int
+hash_return_t
 hash_table_del(hash_table_t *table, void *key)
 {
   hash_pair_t *pair;
