@@ -26,7 +26,7 @@ extern "C"
     {
       /** The message indicates an unrecoverable fatal error.
        */
-      V_FATAL = 1,		/* 0000b */
+      V_FATAL = 0,		/* 0000b */
       /** The message indicates an error. */
       V_ERR,			/* 0001b */
       /** The message indicates a problem that the user should be
