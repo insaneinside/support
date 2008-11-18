@@ -23,6 +23,7 @@ if(OPT_VECT_CACHE_MAGNITUDE)
 else(OPT_VECT_CACHE_MAGNITUDE)
   set(VECT_CACHE_MAGNITUDE 0)
 endif(OPT_VECT_CACHE_MAGNITUDE)
+
 mark_as_advanced(FORCE ENABLE_MLOG_CONTEXT VECT_CACHE_MAGNITUDE)
 #
 ################################################################
@@ -47,9 +48,11 @@ install(DIRECTORY
 #
 ################################################################
 
-################################################################
-# Installation
-
-add_subdirectory(tests)
 add_subdirectory(src)
+
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif(BUILD_TESTING)
+
+# Create a CMake export file for the build tree
 export(TARGETS support FILE support.cmake)
