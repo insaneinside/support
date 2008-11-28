@@ -12,6 +12,8 @@ include(${Support_SOURCE_DIR}/cmake/package.cmake)
 # Options
 option(OPT_ENABLE_MLOG_CONTEXT "Enable support for logging contexts" ON)
 option(OPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
+option(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
+option(SPT_BUILD_STATIC "Build a static version of the library" ON)
 
 if(OPT_ENABLE_MLOG_CONTEXT)
   set(ENABLE_MLOG_CONTEXT 1)
@@ -55,4 +57,4 @@ if(BUILD_TESTING)
 endif(BUILD_TESTING)
 
 # Create a CMake export file for the build tree
-export(TARGETS support FILE support.cmake)
+export(TARGETS ${library_targets} FILE support.cmake)
