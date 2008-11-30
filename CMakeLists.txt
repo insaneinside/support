@@ -10,10 +10,16 @@ include(${Support_SOURCE_DIR}/cmake/package.cmake)
 
 ################################################################
 # Options
-option(SPT_ENABLE_MLOG_CONTEXT "Enable support for logging contexts" ON)
-option(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
-option(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
-option(SPT_BUILD_STATIC "Build a static version of the library" ON)
+macro(option_maybe var doc default)
+  if(NOT DEFINED "${var}")
+    option("${var}" "${doc}" "${default}")
+  endif(NOT DEFINED "${var}")
+endmacro(option_maybe)
+
+option_maybe(SPT_ENABLE_MLOG_CONTEXT "Enable support for logging contexts" ON)
+option_maybe(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
+option_maybe(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
+option_maybe(SPT_BUILD_STATIC "Build a static version of the library" ON)
 
 if(SPT_ENABLE_MLOG_CONTEXT)
   set(ENABLE_MLOG_CONTEXT 1)
