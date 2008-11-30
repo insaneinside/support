@@ -10,21 +10,21 @@ include(${Support_SOURCE_DIR}/cmake/package.cmake)
 
 ################################################################
 # Options
-option(OPT_ENABLE_MLOG_CONTEXT "Enable support for logging contexts" ON)
-option(OPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
+option(SPT_ENABLE_MLOG_CONTEXT "Enable support for logging contexts" ON)
+option(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
 option(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
 option(SPT_BUILD_STATIC "Build a static version of the library" ON)
 
-if(OPT_ENABLE_MLOG_CONTEXT)
+if(SPT_ENABLE_MLOG_CONTEXT)
   set(ENABLE_MLOG_CONTEXT 1)
-else(OPT_ENABLE_MLOG_CONTEXT)
+else(SPT_ENABLE_MLOG_CONTEXT)
   set(ENABLE_MLOG_CONTEXT)
-endif(OPT_ENABLE_MLOG_CONTEXT)
-if(OPT_VECT_CACHE_MAGNITUDE)
+endif(SPT_ENABLE_MLOG_CONTEXT)
+if(SPT_VECT_CACHE_MAGNITUDE)
   set(VECT_CACHE_MAGNITUDE 1)
-else(OPT_VECT_CACHE_MAGNITUDE)
+else(SPT_VECT_CACHE_MAGNITUDE)
   set(VECT_CACHE_MAGNITUDE 0)
-endif(OPT_VECT_CACHE_MAGNITUDE)
+endif(SPT_VECT_CACHE_MAGNITUDE)
 
 mark_as_advanced(FORCE ENABLE_MLOG_CONTEXT VECT_CACHE_MAGNITUDE)
 #
