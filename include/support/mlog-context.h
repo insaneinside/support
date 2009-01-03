@@ -1,13 +1,15 @@
 #ifndef MLOG_CONTEXT_H
 #define MLOG_CONTEXT_H	1
 
+#include <support/private/mlog-context.h>
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
   /** @defgroup context Contexts
    *
-   * Component-centric logging.  Log contexts allow for 
+   * Component-centric logging.  Log contexts allow for:
    *
    *   - Runtime activation or deactivation of a given context
    *   - Hierarchical context manipulation
@@ -34,6 +36,9 @@ extern "C"
    *
    * @param description Description of what the logging context is
    * used for.  Currently unused (may be @c NULL).
+   *
+   * @return A pointer to the new context, or @c NULL if an error was
+   * encountered.
    */
   mlog_context_t*
   mlog_context_create(mlog_context_t* parent,
@@ -88,15 +93,59 @@ extern "C"
   void
   mlog_context_reset(mlog_context_t* context);
 
+  /** Use a string value to enable or disable multiple contexts.
+   * Parses the passed string, and searches for similarly-named
+   * contexts under the given root context.
+   *
+   * @param spec A string specifying the contexts to enable or
+   * disable. In <a href="http://www.rfc-editor.org/std/std68.txt">ABNF</a>
+   * notation:
+   * <code>
+   * spec		= single_spec *(","  single_spec)
+   *
+   * single_spec	= state_flag identifier ; Enable or disable a single context.
+   *
+   * state_flag		= "+" / "-"
+   *
+   * identifier		= context_name *("." context_name)
+   *
+   * context_name	= &lt;any CHAR excluding "." and ","&gt;
+   * </code>
+   *
+   * To enable a single context: <code>+context_name</code>
+   *
+   * To enable a certain (single) child context with a non-unique
+   * name: <code>+parent_name.child_name</code>
+   *
+   *
+   * @return The number of individual contexts enabled or disabled, or
+   * a negative error code if an error was encountered.
+   */
+  int
+  mlog_context_parse_spec(/*mlog_context_t* root, */const char* spec);
+
+  /** Interface macro for logging messages in a given context.
+   *
+   * @param cxt The context in which to log.
+   *
+   * @param ... Additional arguments are passed to mlog.
+   *
+   * @see cmlog_real
+   * @see mlog
+   */
+#define cmlog(cxt, ...) if ( mlog_context_active(cxt) ) cmlog_real(cxt, __VA_ARGS__)
 
   /** Context-enabled version of mlog.
+   *
+   * @warning Do not call this function directly; use the cmlog macro instead.
    *
    * @param context The context in which the message is to be logged.
    *
    * @copydetails mlog
    */
   int
-  cmlog(const mlog_context_t* context, const unsigned long spec, const char* fmt, ...);
+  cmlog_real(const mlog_context_t* context, const unsigned long spec, const char* fmt, ...);
+
 
   /**@}*/
 

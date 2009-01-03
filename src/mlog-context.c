@@ -3,94 +3,75 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stddef.h>
 
 #include <support/mlog.h>
-#include <support/hash_table.h>
 #include <support/macro.h>
 
-#define CONTEXT_NAME_SEPARATOR ":"
+#define CONTEXT_NAME_SEPARATOR "."
 #define CONTEXT_NAME_SEPARATOR_LENGTH 1
 #define CMLOG_FORMAT "[%s] %s"
-static __id_t context_id_base = 0;
+static unsigned long int context_id_base = 0;
+static dllist_t* parse_spec_list = NULL;
 
-#define LEVEL(spec)	(spec & MLOG_LOGLEVEL_MASK )
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+#include <assert.h>
+#define PARSE_SPEC_MAGIC ( ( 'S' << 3 ) + ( 'P' << 2 ) + ( 'E' << 1 ) + 'C' )
+#endif
 
-/** Flags that detail the state of a log context.
- */
-enum mlog_context_flags
-  {
-    /** Indicates which of the two policies -- implicit or explicit --
-     * currently governs the context.  If set, the explicit policy is
-     * active.
-     */
-    MLOG_CONTEXT_POLICY	= 1 << 0,
-
-    /** Indicates the (in)active state of the explicit policy.
-     */
-    MLOG_CONTEXT_EXPLICIT_STATE	= 1 << 1,
-
-    /** Indicates the (in)active state of the implicit policy.
-     */
-    MLOG_CONTEXT_IMPLICIT_STATE	= 1 << 2
-
-};
-
-struct __mlog_context
+struct parse_spec
 {
-  /** Context ID */
-  __id_t id;
-
-  /** Magic number. */
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
   uint32_t magic;
-
-  /** Symbolic name */
-  char* name;
-
-  /** Fully-scoped name */
-  char* full_name;
-
-  /** Description string, in case the user asks for a list of available contexts */
-  char* description;
-
-  /** Hash of @v name, to speed up symbolic lookups.
+#endif
+  /** Value of flags (below) will override value of flags in matching
+   * contexts for bits set in this mask.
    */
-  hash_t name_hash;
+  unsigned long int mask;
 
-  /* /\** Non-zero if the context is active.
-   *  *\/
-   * int active; */
-
-  /** State flags.
-   * @see mlog_context_flags
+  /** IOR flags field of any matching context with this value.
    */
   unsigned long int flags;
 
-  /** List of child contexts */
-  dllist_t* children;
-  /* struct __mlog_context* children;
-   * unsigned int num_children; */
-
-  /** If not NULL, the context of which this is a subcontext.
+  /** Copy of the single_spec input string.
    */
-  struct __mlog_context* parent;
+  char* input;
+
+  size_t name_array_length;
+  char** name_array;
 };
 
-#define CONTEXT_MAGIC  ( ( 'M' << 3 ) + ( 'C' << 2 ) + ( 'X' << 1 ) + 'T' )
-#define MLOG_IS_CONTEXT(cxt) \
-  ( cxt && ((mlog_context_t*) cxt)->magic == CONTEXT_MAGIC )
-/* *((uint32_t*) cxt + offsetof(mlog_context_t, magic)) == CONTEXT_MAGIC ) */
-
-/** Determine the state -- active or inactive -- of a context.
- *
- * @param flags Value of the context's `flags' variable.
- */
-inline unsigned long int
-context_state(unsigned long int flags)
+int
+_print_pspec(const struct parse_spec* ps)
 {
-  return flags & MLOG_CONTEXT_POLICY ?
-    flags & MLOG_CONTEXT_EXPLICIT_STATE : flags & MLOG_CONTEXT_IMPLICIT_STATE;
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+  assert(ps->magic == PARSE_SPEC_MAGIC);
+#endif
+
+  printf("spec %p (%d): %s",
+	 ps,
+	 ps->name_array_length,
+	 ps->flags & MLOG_CONTEXT_EXPLICIT_STATE ? "+" : "-"
+	 );
+  unsigned int i;
+  char end = 0;
+  for ( i = 0; i < ps->name_array_length; i++ )
+    {
+      if ( i < ps->name_array_length - 1 )
+	end = 0;
+      else
+	end = 1;
+
+      printf("%s%s%s",
+	     ps->name_array[i],
+	     end ? "" : CONTEXT_NAME_SEPARATOR,
+	     end ? "\n" : "");
+    }
+
+  return 1;
 }
 
+#define LEVEL(cmlog_flags)	(cmlog_flags & MLOG_LOGLEVEL_MASK )
 
 /** Build the full name that should be assigned to a context.
  */
@@ -131,9 +112,10 @@ context_build_full_name(const mlog_context_t* context)
   left -= to - lastto;
 
   /* `to' should point to the nul byte at the end of the string. */
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
   if ( left != 1 )
     mlog(V_DEBUG, "In %s: output buffer has incorrect size (%d left).", __func__, left);
-
+#endif
   return out;
 }
 
@@ -148,10 +130,6 @@ context_destroy_single(mlog_context_t* context)
     {
       context->magic = 0;
 
-      mlog(V_DEBUG | F_NONEWLINE, "%s: destroying \"%s\"... ", __func__, context->name);
-
-      /* if ( context->name ) */
-
       /* full_name may just be a copy of name pointer */
       if ( context->full_name && context->full_name != context->name )
 	free(context->full_name);
@@ -160,8 +138,6 @@ context_destroy_single(mlog_context_t* context)
       if ( context->description )
 	free(context->description);
       free(context);
-
-      mlog(V_DEBUG, "done.");
     }
 
 }
@@ -209,6 +185,46 @@ _fe_unparent_context(dllist_t* node, const void* udata)
   return 1;
 }
 
+static int
+_apply_pspec(const struct parse_spec* ps, mlog_context_t* cxt)
+{
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+  assert(cxt->magic == CONTEXT_MAGIC);
+  assert(ps->magic == PARSE_SPEC_MAGIC);
+#endif
+  /* printf("%p: ", cxt);
+   * _print_pspec(ps); */
+  int i;
+  const mlog_context_t* cc = cxt;
+  for ( i = ps->name_array_length - 1; i > -1 && cc != NULL; --i )
+    {
+      if ( strcmp(cc->name, ps->name_array[i]) )
+	return 0;
+      cc = cc->parent;
+    }
+  cxt->flags = (cxt->flags & ~(ps->mask)) | (ps->flags & ps->mask);
+  /* if ( ps->flags & MLOG_CONTEXT_EXPLICIT_STATE )
+   *   mlog_context_enable(cxt);
+   * else
+   *   mlog_context_disable(cxt); */
+
+  return 1;
+}
+
+static int
+_fe_apply_pspecs(dllist_t* node, const void* udata)
+{
+  struct parse_spec* ps = (struct parse_spec*) node->data;
+  mlog_context_t* cxt = (mlog_context_t*) udata;
+  if ( _apply_pspec(ps, cxt) )
+    {
+      free(ps);
+      parse_spec_list = dllist_remove_node(parse_spec_list, node);
+    }
+  else
+    return 1;
+}
+
 mlog_context_t*
 mlog_context_create(mlog_context_t* parent,
 		    const char* name, const char* description)
@@ -227,7 +243,9 @@ mlog_context_create(mlog_context_t* parent,
   memset(o, 0, sizeof(mlog_context_t));
 
   o->id = context_id_base++;
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
   o->magic = CONTEXT_MAGIC;
+#endif
   o->name = strdup(name);
   o->description = strdup(description);
 
@@ -235,6 +253,7 @@ mlog_context_create(mlog_context_t* parent,
     {
       o->parent = parent;
       parent->children = dllist_append(parent->children, o);
+      mlog_context_reset(o);
     }
 
   o->full_name = context_build_full_name(o);
@@ -246,6 +265,9 @@ mlog_context_create(mlog_context_t* parent,
       free(o);
       return NULL;
     }
+
+  if ( parse_spec_list )
+    dllist_foreach(parse_spec_list, &_fe_apply_pspecs, o);
 
   return o;
 }
@@ -273,16 +295,13 @@ mlog_context_destroy_recursive(mlog_context_t* context)
   if ( ! context )
     return;
 
-  mlog(V_DEBUG, "%s: destroying \"%s\"", __func__, context->name);
   if ( context->children )
     {
       dllist_foreach(context->children, _fe_destroy_context_recursive, NULL);
       dllist_free(context->children);
-      mlog(V_DEBUG, "done.");
     }
 
   context_destroy_single(context);
-  mlog(V_DEBUG, "%s: done.", __func__);
 }
 
 /* ----------------------------------------------------------------
@@ -328,7 +347,7 @@ context_inherit_state(mlog_context_t* context)
 {
   if ( context->parent )
     {
-      if ( context_state(context->parent->flags) )
+      if ( mlog_context_state(context->parent->flags) )
 	context->flags |= MLOG_CONTEXT_IMPLICIT_STATE;
       else
 	context->flags &= ~MLOG_CONTEXT_IMPLICIT_STATE;
@@ -373,11 +392,123 @@ mlog_context_reset(mlog_context_t* context)
   context_inherit_state(context);
 }
 
-/* ----------------------------------------------------------------
- * Context-based logging
- */
+
+
+#define assign_and_advance(dest,type,size,source,size_counter)	\
+  dest = (type *) source;					\
+  source += (ptrdiff_t) size;				\
+  size_counter -= size
+
+static struct parse_spec*
+_parse_single_spec(const char* _spec, const size_t _length)
+{
+  if ( _length < 2 || *_spec != '+' && *_spec != '-' )
+    return NULL;
+
+  size_t num_elems = 1;
+
+  /* Count the number of name elements. */
+  {
+    const char* search = _spec + 1;
+    while ( (search = strchr(search, '.')) != NULL )
+      {
+	num_elems++;
+	search++;
+      }
+  }
+
+  ssize_t n
+    = sizeof(struct parse_spec)
+    + (num_elems * sizeof(char*))
+    + ( _length + 1 );
+
+  char* buf = (char*) malloc(n);
+  memset(buf, 0, n);
+
+  struct parse_spec* ps = NULL;
+  assign_and_advance(ps, struct parse_spec, sizeof(struct parse_spec), buf, n);
+  assign_and_advance(ps->name_array, char*, num_elems * sizeof(char*), buf, n);
+  assign_and_advance(ps->input, char, _length + 1, buf, n);
+  memcpy(ps->input, _spec, _length + 1);
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+  /* should have used up all the allocated memory  */
+  assert(n == 0);
+  ps->magic = PARSE_SPEC_MAGIC;
+#endif
+  ps->name_array_length = num_elems;
+
+  /* Loop through again and grab name element strings  */
+  unsigned int i = 0;
+  char* search = ps->input + 1;
+  while ( search < ps->input + _length )
+    {
+      buf = search;
+      search = strchrnul(buf, '.');
+      *search = '\0';
+      ps->name_array[i] = buf;
+      i++, search++;
+    }
+
+  if ( *(ps->input) == '+' )
+    {
+      ps->flags
+	= MLOG_CONTEXT_POLICY	      /* explicit policy */
+	| MLOG_CONTEXT_EXPLICIT_STATE /* set to enabled */;
+      ps->mask = ps->flags;
+    }
+  else if ( *(ps->input) == '-' )
+    {
+      ps->flags = MLOG_CONTEXT_POLICY;
+      ps->mask
+	= MLOG_CONTEXT_POLICY	      /* explicit policy */
+	| MLOG_CONTEXT_EXPLICIT_STATE /* copy the 'disabled' value */;
+    }
+  else
+    abort();
+  return ps;
+}
+
 int
-cmlog(const mlog_context_t* context, const unsigned long spec, const char* fmt, ...)
+mlog_context_parse_spec(const char* __ispec)
+{
+  if ( !__ispec )
+    return -1;
+
+  size_t count = 0;
+  char* spec = strdup(__ispec);
+  const size_t len = strlen(spec);
+  if ( len < 2 )
+    return 0;
+  char* sp = spec;
+  char* end = spec + len;
+  char* sg_spec_end = NULL;
+  struct parse_spec* pspec;
+
+  while ( sp <= end )
+    {
+      /* Find the end of this single_spec. */
+      sg_spec_end = strchr(sp, ',');
+      if ( !sg_spec_end )
+	sg_spec_end = end;
+
+      *sg_spec_end = '\0';
+      pspec = _parse_single_spec(sp, sg_spec_end - sp);
+      if ( pspec )
+	{
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+	  assert(pspec->magic == PARSE_SPEC_MAGIC);
+#endif
+	  parse_spec_list = dllist_append(parse_spec_list, pspec);
+	  count++;
+	}
+      sp = sg_spec_end + 1;
+    }
+  /* free(spec); */
+  return count;
+}
+
+int
+cmlog_real(const mlog_context_t* context, const unsigned long spec, const char* fmt, ...)
 {
   va_list ap;
   mlog_loglevel_t lvl = LEVEL(spec);
@@ -385,7 +516,7 @@ cmlog(const mlog_context_t* context, const unsigned long spec, const char* fmt, 
   size_t ncfmt = -1;
   int r = -1;
 
-  if ( ! context_state(context->flags) )
+  if ( ! mlog_context_state(context->flags) )
     return 0;
 
   if ( mlog_get_level() < lvl )
