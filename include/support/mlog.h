@@ -3,7 +3,7 @@
 
 #include <stdarg.h>
 #include <support/support-config.h>
-#ifdef ENABLE_MLOG_CONTEXT
+#ifdef SPT_ENABLE_MLOG_CONTEXT
 #include <support/mlog-context.h>
 #endif
 

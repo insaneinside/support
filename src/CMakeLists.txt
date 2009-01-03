@@ -1,19 +1,17 @@
+set(SPT_SHARED_TARGET_SUFFIX "" CACHE INTERNAL "Suffix to use on the shared target")
+set(SPT_STATIC_TARGET_SUFFIX "" CACHE INTERNAL "Suffix to use on the shared target")
+set(SUPPORT_LIBRARY "support"
+  CACHE STRING "Name of the default library target for linking")
+
 # Configure library names
 if(SPT_BUILD_SHARED AND NOT SPT_BUILD_STATIC OR SPT_BUILD_STATIC AND NOT SPT_BUILD_SHARED)
   # Building only one library.
-  set(SUPPORT_LIBRARY "support")
   mark_as_advanced(SUPPORT_LIBRARY FORCE)
-  if(SPT_BUILD_STATIC AND NOT SPT_BUILD_SHARED)
-    set(SPT_STATIC_TARGET_SUFFIX "") # static library only
-  elseif(SPT_BUILD_SHARED AND NOT SPT_BUILD_STATIC)
-    set(SPT_SHARED_TARGET_SUFFIX "") # shared library only
-  endif(SPT_BUILD_STATIC AND NOT SPT_BUILD_SHARED)
-
 elseif(SPT_BUILD_SHARED AND SPT_BUILD_STATIC)
   # Building both.  Use suffixes.
   set(SPT_STATIC_TARGET_SUFFIX "-static")
   set(SPT_SHARED_TARGET_SUFFIX "-shared")
-  set(SUPPORT_LIBRARY "support")
+  set(SUPPORT_LIBRARY "support-static") # default to the static library
 else(SPT_BUILD_STATIC AND NOT SPT_BUILD_SHARED)
   # Building nothing?  Yell at the user.
   message(FATAL_ERROR "Neither SPT_BUILD_SHARED nor SPT_BUILD_STATIC is set!")
