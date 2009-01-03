@@ -29,7 +29,7 @@ namespace spt
   {
   public:
     Vector()
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(0), _M_recalc_mag(false)
 #endif
     {
@@ -37,7 +37,7 @@ namespace spt
 
 
     Vector(const Vector& v)
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(v._M_mag_cached), _M_recalc_mag(v._M_recalc_mag)
 #endif
     {
@@ -45,7 +45,7 @@ namespace spt
     }
 
     Vector(scalar_t v0, scalar_t v1, scalar_t v2)
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(0), _M_recalc_mag(true)
 #endif
     {
@@ -55,7 +55,7 @@ namespace spt
 
 
 /*     Vector(scalar_t v[3])
- * #ifdef VECT_CACHE_MAGNITUDE
+ * #ifdef SPT_VECT_CACHE_MAGNITUDE
  *       : _M_mag_cached(0), _M_recalc_mag(true)
  * #endif
  *     {
@@ -65,7 +65,7 @@ namespace spt
  *     } */
 
     Vector(const svec_t& v)
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(0), _M_recalc_mag(true)
 #endif
     {
@@ -74,7 +74,7 @@ namespace spt
 
 
     Vector(const svec_t* v)
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(0), _M_recalc_mag(true)
 #endif
     {
@@ -92,7 +92,7 @@ namespace spt
 	_M_val[vn] = val;
       else
 	throw std::out_of_range(MSG_OORANGE);
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
     }
@@ -102,7 +102,7 @@ namespace spt
     set(scalar_t v0, scalar_t v1, scalar_t v2)
     {
       SV_SET(_M_val, v0, v1, v2);
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
     }
@@ -111,7 +111,7 @@ namespace spt
     set(scalar_t nv[3])
     {
       SV_SET(_M_val, nv[0], nv[1], nv[2]);
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
     }
@@ -127,7 +127,7 @@ namespace spt
     {
       SV_SET(_M_val, 0, 0, 0);
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_mag_cached = 0;
       _M_recalc_mag = false;
 #endif
@@ -136,7 +136,7 @@ namespace spt
     scalar_t
     mag()
     {
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       if ( _M_recalc_mag )
 	{
 	  _M_mag_cached = this->compute_mag();
@@ -152,7 +152,7 @@ namespace spt
     scalar_t
     mag() const
     {
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       if ( !_M_recalc_mag )
 	return _M_mag_cached;
       else
@@ -184,7 +184,7 @@ namespace spt
       _M_val[2] /= m;
 
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_mag_cached = 1.0;
       _M_recalc_mag = false;
 #endif
@@ -209,7 +209,7 @@ namespace spt
 #ifdef USE_DEBUG
       assert(S_EQ(o.compute_mag(), 1.0));
 #endif
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       o._M_mag_cached = 1.0;
       o._M_recalc_mag = false;
 #endif
@@ -236,7 +236,7 @@ namespace spt
 #ifdef USE_DEBUG
       assert(S_EQ(o.compute_mag(), 1.0));
 #endif
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       o._M_mag_cached = 1.0;
       o._M_recalc_mag = false;
 #endif
@@ -279,7 +279,7 @@ namespace spt
     bool
     operator==(const Vector& r) const
     {
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       if ( ( !_M_recalc_mag && r._M_recalc_mag ) &&
 	   S_EQ(_M_mag_cached, r._M_mag_cached) )
 	return true;
@@ -384,7 +384,7 @@ namespace spt
       _M_val[1] += r._M_val[1];
       _M_val[2] += r._M_val[2];
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
       return *this;
@@ -397,7 +397,7 @@ namespace spt
       _M_val[1] -= r._M_val[1];
       _M_val[2] -= r._M_val[2];
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
 
@@ -425,7 +425,7 @@ namespace spt
 	   ( ov[2] * r._M_val[0] ) - ( ov[0] * r._M_val[2] ),
 	   ( ov[0] * r._M_val[1] ) - ( ov[1] * r._M_val[0] ) );
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
 
@@ -439,7 +439,7 @@ namespace spt
       _M_val[1] *= r;
       _M_val[2] *= r;
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
 
@@ -453,7 +453,7 @@ namespace spt
       _M_val[1] /= r;
       _M_val[2] /= r;
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
 
@@ -481,7 +481,7 @@ namespace spt
   protected:
     /* svec_t _M_val; */
     scalar_t _M_val[3];
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
     scalar_t _M_mag_cached;
     bool _M_recalc_mag;
 #endif
@@ -504,7 +504,7 @@ namespace spt
   {
   public:
     Vec()
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(0), _M_recalc_mag(false)
 #endif
     {
@@ -512,7 +512,7 @@ namespace spt
 
 
     Vec(const Vec<_N>& v)
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(v._M_mag_cached), _M_recalc_mag(v._M_recalc_mag)
 #endif
     {
@@ -521,7 +521,7 @@ namespace spt
 
 
     Vec(const scalar_t* v)
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(0), _M_recalc_mag(true)
 #endif
     {
@@ -530,7 +530,7 @@ namespace spt
 
 
     Vec(const scalar_t s0, ...)
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(0), _M_recalc_mag(true)
 #endif
     {
@@ -554,7 +554,7 @@ namespace spt
 	_M_val[vn] = val;
       else
 	throw std::out_of_range(MSG_OORANGE);
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
     }
@@ -563,7 +563,7 @@ namespace spt
     set(scalar_t nv[_N])
     {
       memcpy(_M_val, nv, _N * sizeof(scalar_t));
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
     }
@@ -579,7 +579,7 @@ namespace spt
     {
       memset(_M_val, 0, _N * sizeof(scalar_t));
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_mag_cached = 0;
       _M_recalc_mag = false;
 #endif
@@ -588,7 +588,7 @@ namespace spt
     scalar_t
     mag()
     {
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       if ( _M_recalc_mag )
 	{
 	  _M_mag_cached = this->compute_mag();
@@ -604,7 +604,7 @@ namespace spt
     scalar_t
     mag() const
     {
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       if ( !_M_recalc_mag )
 	return _M_mag_cached;
       else
@@ -642,7 +642,7 @@ namespace spt
 	_M_val[i] /= m;
 
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_mag_cached = 1.0;
       _M_recalc_mag = false;
 #endif
@@ -668,7 +668,7 @@ namespace spt
 #ifdef USE_DEBUG
       assert(S_EQ(o.compute_mag(), 1.0));
 #endif
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       o._M_mag_cached = 1.0;
       o._M_recalc_mag = false;
 #endif
@@ -695,7 +695,7 @@ namespace spt
 #ifdef USE_DEBUG
       assert(S_EQ(o.compute_mag(), 1.0));
 #endif
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       o._M_mag_cached = 1.0;
       o._M_recalc_mag = false;
 #endif
@@ -859,7 +859,7 @@ namespace spt
 	_M_val[i] += r._M_val[i];
 
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
       return *this;
@@ -872,7 +872,7 @@ namespace spt
       for ( i = 0; i < _N; i++ )
 	_M_val[i] -= r._M_val[i];
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
 
@@ -904,7 +904,7 @@ namespace spt
  * 	   ( ov[2] * r._M_val[0] ) - ( ov[0] * r._M_val[2] ),
  * 	   ( ov[0] * r._M_val[1] ) - ( ov[1] * r._M_val[0] ) );
  * 
- * #ifdef VECT_CACHE_MAGNITUDE
+ * #ifdef SPT_VECT_CACHE_MAGNITUDE
  *       _M_recalc_mag = true;
  * #endif
  * 
@@ -918,7 +918,7 @@ namespace spt
       for ( i = 0; i < _N; i++ )
 	_M_val[i] *= r;
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
 
@@ -932,7 +932,7 @@ namespace spt
       for ( i = 0; i < _N; i++ )
 	_M_val[i] /= r;
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
 
@@ -949,7 +949,7 @@ namespace spt
 
     scalar_t _M_val[_N];
 
-#ifdef VECT_CACHE_MAGNITUDE
+#ifdef SPT_VECT_CACHE_MAGNITUDE
     scalar_t _M_mag_cached;
     bool _M_recalc_mag;
 #endif

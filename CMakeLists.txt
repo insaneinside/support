@@ -2,6 +2,7 @@ project(Support)
 cmake_minimum_required(VERSION 2.4 FATAL_ERROR)
 mark_as_advanced(FORCE CMAKE_BACKWARDS_COMPATIBILITY)
 
+list(APPEND CMAKE_MODULE_PATH "${Support_SOURCE_DIR}/cmake")
 ################################################################
 # CPack
 include(${Support_SOURCE_DIR}/cmake/package.cmake)
@@ -10,29 +11,40 @@ include(${Support_SOURCE_DIR}/cmake/package.cmake)
 
 ################################################################
 # Options
+
+# Define an option only if its variable is not yet defined.
 macro(option_maybe var doc default)
   if(NOT DEFINED "${var}")
     option("${var}" "${doc}" "${default}")
   endif(NOT DEFINED "${var}")
 endmacro(option_maybe)
 
+# Compile-time options
 option_maybe(SPT_ENABLE_MLOG_CONTEXT "Enable support for logging contexts" ON)
 option_maybe(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
+option_maybe(SPT_ENABLE_CONSISTENCY_CHECKS "Enable run-time consistency checks" ON)
+
+# Build components
 option_maybe(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
 option_maybe(SPT_BUILD_STATIC "Build a static version of the library" ON)
 
 if(SPT_ENABLE_MLOG_CONTEXT)
-  set(ENABLE_MLOG_CONTEXT 1)
+  set(SPT_ENABLE_MLOG_CONTEXT 1)
 else(SPT_ENABLE_MLOG_CONTEXT)
-  set(ENABLE_MLOG_CONTEXT)
+  set(SPT_ENABLE_MLOG_CONTEXT)
 endif(SPT_ENABLE_MLOG_CONTEXT)
+
 if(SPT_VECT_CACHE_MAGNITUDE)
-  set(VECT_CACHE_MAGNITUDE 1)
+  set(SPT_VECT_CACHE_MAGNITUDE 1)
 else(SPT_VECT_CACHE_MAGNITUDE)
-  set(VECT_CACHE_MAGNITUDE 0)
+  set(SPT_VECT_CACHE_MAGNITUDE)
 endif(SPT_VECT_CACHE_MAGNITUDE)
 
-mark_as_advanced(FORCE ENABLE_MLOG_CONTEXT VECT_CACHE_MAGNITUDE)
+if(SPT_ENABLE_CONSISTENCY_CHECKS)
+  set(SPT_ENABLE_CONSISTENCY_CHECKS 1)
+else(SPT_ENABLE_CONSISTENCY_CHECKS)
+  set(SPT_ENABLE_CONSISTENCY_CHECKS)
+endif(SPT_ENABLE_CONSISTENCY_CHECKS)
 #
 ################################################################
 
