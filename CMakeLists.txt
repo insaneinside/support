@@ -68,11 +68,25 @@ install(DIRECTORY
 #
 ################################################################
 
+set(SPT_WARN_FLAGS "-Wall -pedantic -Wno-variadic-macros")
+if(NOT CMAKE_C_FLAGS)
+  set(CMAKE_C_FLAGS "${SPT_WARN_C_FLAGS} --std=c99")
+else(NOT CMAKE_C_FLAGS)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SPT_WARN_C_FLAGS} --std=c99")
+endif(NOT CMAKE_C_FLAGS)
+
+if(NOT CMAKE_CXX_FLAGS)
+  set(CMAKE_CXX_FLAGS "${SPT_WARN_C_FLAGS}")
+else(NOT CMAKE_CXX_FLAGS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SPT_WARN_C_FLAGS}")
+endif(NOT CMAKE_CXX_FLAGS)
+
 add_subdirectory(src)
 
-if(BUILD_TESTING)
+if("${CMAKE_HOME_DIRECTORY}" STREQUAL "${Support_SOURCE_DIR}")
+  set(BUILD_TESTING 1)
   add_subdirectory(tests)
-endif(BUILD_TESTING)
+endif("${CMAKE_HOME_DIRECTORY}" STREQUAL "${Support_SOURCE_DIR}")
 
 # Create a CMake export file for the build tree
-export(TARGETS ${library_targets} FILE support.cmake)
+export(TARGETS ${SPT_LIBRARY_TARGETS} FILE support.cmake)
