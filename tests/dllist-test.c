@@ -7,8 +7,8 @@
 #include <assert.h>
 #include <string.h>
 
-#include <support/mlog.h>
 #include <support/dllist.h>
+#include "timeutil.h"
 
 #define NTESTSTRINGS 10
 #define WORDLIST "/home/collin/.wordlists/2of12.txt"
@@ -97,6 +97,7 @@ file_get_line(FILE* fp, const unsigned int ln, char** buf, size_t* count)
 int
 main(int argc, char** argv)
 {
+  init_mark_variables();
   FILE* fp;
   char** str;
   unsigned int lines;
@@ -104,8 +105,6 @@ main(int argc, char** argv)
   size_t n;
   dllist_t* list;
   unsigned int nteststrings = NTESTSTRINGS;
-  clock_t st, en;
-  mlog_set_level(V_DEBUG);
 
   if ( argc > 1 )
     {
@@ -115,7 +114,7 @@ main(int argc, char** argv)
 
       if ( *tail != '\0' || errno == ERANGE || errno == EINVAL )
 	{
-	  mlog(V_FATAL, "Bad number \"%s\"", argv[1]);
+	  fprintf(stderr, "Bad number \"%s\"\n", argv[1]);
 	  return 1;
 	}
     }
@@ -123,17 +122,19 @@ main(int argc, char** argv)
   srand(time(NULL));
 
   /* Grab some words at random for testing */
-  mlog(V_INFO, "Retrieving %d words for use as test strings", nteststrings);
-  mlog(V_INFO, "from wordlist \"%s\"", WORDLIST);
+  fprintf(stderr, "Retrieving %d words from \"%s\" for use as test strings\n", nteststrings, WORDLIST);
   str = (char**) malloc(sizeof(char*) * nteststrings);
   fp = fopen(WORDLIST, "r");
-  mlog(V_INFO | F_NONEWLINE, "Counting lines... ");
-  st = clock();
+  if ( !fp )
+    {
+      perror(WORDLIST);
+      abort();
+    }
+  begin("Counting lines");
   lines = file_count_lines(fp);
-  en = clock();
-  mlog(V_INFO, "%u total lines (%.03fs)", lines, (en - st)/CLOCKS_PER_SEC);
+  endf("%u total lines", lines);
 
-  mlog(V_INFO | F_NONEWLINE, "Selecting random words... ");
+  begin("Selecting random words");
   st = clock();
   for ( i = 0; i < nteststrings; i++ )
     {
@@ -145,34 +146,29 @@ main(int argc, char** argv)
       if ( str[i][sl - 1] == '\n' )
 	  str[i][sl - 1] = '\0';
 /*       for(j=0; j < sl; j++) */
-/* 	if(str[i][j] == '\n') */
-/* 	  str[i][j] = '\0'; */
-      
+/*	if(str[i][j] == '\n') */
+/*	  str[i][j] = '\0'; */
+
     }
-  en = clock();
+  end();
   fclose(fp);
-  mlog(V_INFO, "done (%.03fs)", ( en - st ) / CLOCKS_PER_SEC );
 
 
   /* Populate the list */
   list = NULL;
 
-  printf("Populating list... ");
-  st = clock();
+  begin("Populating list");
   for(i=0; i < nteststrings; i++)
     list = dllist_append(list, str[i]);
-  en = clock();
-  printf("done. (%.03fs)\n", (en - st)/CLOCKS_PER_SEC);
+  end();
 
   /* Print out list */
-  printf("List contents:\n");
+  fprintf(stderr, "List contents:\n");
   dllist_foreach(list, &_print_string, NULL);
 
-  printf("\nSorting list using dllist_sort... ");
-  st = clock();
+  begin("\nSorting list using dllist_sort");
   list = dllist_sort(list, &alphacmp);
-  en = clock();
-  printf("done. (%.03fs)\n", (en - st)/CLOCKS_PER_SEC);
+  end();
 
   printf("List contents:\n");
   dllist_foreach(list, &_print_string, NULL);
@@ -180,19 +176,16 @@ main(int argc, char** argv)
   list = NULL;
 
   /* \n in middle of next string because it's been wrapped to 70 columns. */
-  printf("\nOkay, now building a sorted structure from scratch using the same\nstrings... ");
-
-  st = clock();
+  begin("\nOkay, now building a sorted structure from scratch using the same\nstrings");
   for ( i = 0; i < nteststrings; i++ )
     list = dllist_insert_sorted(list, str[i], &alphacmp);
-  en = clock();
-  printf("done. (%.03fs)\n", (en - st)/CLOCKS_PER_SEC);
+  end();
 
   printf("List contents:\n");
   dllist_foreach(list, &_print_string, NULL);
 
   dllist_foreach(list, &_free_string, NULL);
-  dllist_free(list);  
+  dllist_free(list);
 
   /* for(i=0; i < nteststrings; i++)
    *   free(str[i]); */

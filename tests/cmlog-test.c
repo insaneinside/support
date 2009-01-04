@@ -3,54 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <support/mlog.h>
-#include <sys/timex.h>
 #include <assert.h>
-#include <errno.h>
 #include <string.h>
-
-#define time_value te.time.tv_usec
-#define time_elapsed_value te.time.tv_usec - st
-#define time_value_type long int
-#define time_value_format "%ld microsecond%s"
-#define is_sg(v) (v == 1)
-
-#define update_time_value()						\
-  if ( ntp_gettime(&te) && errno != TIME_ERROR ) { perror("ntp_gettime"); abort(); } \
-  else
-
-#define update_last_time_value() st = time_value
-
-#define mark_label(s)							\
-  if ( ntp_gettime(&te) ) { perror("ntp_gettime"); abort(); }		\
-  if ( st != -1 )							\
-    fprintf(stderr, "-- MARK%s%s ("time_value_format" elapsed)\n",	\
-	    *s != '\0' ? ": " : "",					\
-	    s, time_elapsed_value, is_sg(time_elapsed_value) ? "" : "s"); \
-  else fprintf(stderr, "-- MARK%s%s\n",					\
-	       *s != '\0' ? ": " : "",					\
-	       s);							\
-  update_time_value();							\
-  update_last_time_value()
-
-#define mark_init(s) \
-
-#define mark() mark_label("")
-
-#define begin(label)							\
-  fprintf(stderr, "-- %s... ", label);					\
-  update_time_value(); update_last_time_value()
-
-#define begin_nl(label)							\
-  fprintf(stderr, "-- %s\n", label);					\
-  update_time_value(); update_last_time_value()
-
-
-#define end()								\
-  update_time_value();							\
-  fprintf(stderr, "done: "time_value_format" elapsed\n",		\
-	  time_elapsed_value,						\
-	  is_sg(time_elapsed_value) ? "" : "s")
-
+#include "timeutil.h"
 
 static void
 do_test(const char* spec)
@@ -58,8 +13,7 @@ do_test(const char* spec)
   char* ok = "ok";
   char* err = "error";
 
-  struct ntptimeval te;
-  long int st = -1;
+  init_mark_variables();
   fprintf(stderr, "These baseline marks have no code in between:\n");
   mark_label("baseline");
   mark_label("baseline 2");
@@ -89,7 +43,7 @@ do_test(const char* spec)
   if ( !spec )
     mlog_context_enable(A);	/* implicitly enables B, C, D, E */
   else
-    begin_nl("Printing test messages for spec-enabled contexts"); 
+    begin_nl("Printing test messages for spec-enabled contexts");
 
   cmlog(A, V_DEBUG, ok);	/* visible */
   cmlog(B, V_DEBUG, ok);	/* visible */
