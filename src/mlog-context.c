@@ -11,6 +11,7 @@
 #define CONTEXT_NAME_SEPARATOR "."
 #define CONTEXT_NAME_SEPARATOR_LENGTH 1
 #define CMLOG_FORMAT "[%s] %s"
+#define CMLOG_FORMAT_NONAME "%s"
 static unsigned long int context_id_base = 0;
 static dllist_t* parse_spec_list = NULL;
 
@@ -53,9 +54,11 @@ context_build_full_name(const mlog_context_t* context)
   char* to = NULL;
   char* lastto = NULL;
 
-  /* If this is not a subcontext, just use the immediate name. */
-  if ( ! context->parent )
-    return context->name;/* strdup(context->name); */
+  /* If this is not a subcontext, or the parent's name is hidden, just
+   * use the immediate name.
+   */
+  if ( context->parent == NULL || context->parent->flags & MLOG_CONTEXT_HIDE_NAME )
+    return context->name;
 
   /* Calculate full_name buffer size. */
   left =
@@ -487,11 +490,14 @@ cmlog_real(const mlog_context_t* context, const unsigned long spec, const char* 
   size_t ncfmt = -1;
   int r = -1;
 
-  if ( ! mlog_context_state(context->flags) )
+  if ( ! mlog_context_active(context) )
     return 0;
 
   if ( mlog_get_level() < lvl )
     return 0;
+  const char* asfmt = CMLOG_FORMAT;
+  if ( context->flags & MLOG_CONTEXT_HIDE_NAME )
+    asfmt = CMLOG_FORMAT_NONAME;
 
   va_start(ap, fmt);
 

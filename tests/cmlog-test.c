@@ -62,8 +62,10 @@ do_test(const char* spec)
     }
 
   begin("Creating contexts");
-  mlog_context_t *A, *B, *C, *D, *E, *E2;
-  A = mlog_context_create(NULL, "A", "Test context A");
+  mlog_context_t *all, *A, *B, *C, *D, *E, *E2;
+  all = mlog_context_create(NULL, "all", "Test hidden context");
+  all->flags |= MLOG_CONTEXT_HIDE_NAME;
+  A = mlog_context_create(all, "A", "Test context A");
   B = mlog_context_create(A, "B", "Test context B");
   C = mlog_context_create(A, "C", "Test context C");
   D = mlog_context_create(C, "D", "Test context D");
