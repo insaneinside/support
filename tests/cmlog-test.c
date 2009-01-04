@@ -7,6 +7,38 @@
 #include <string.h>
 #include "timeutil.h"
 
+#if 0
+static int
+_print_pspec(const struct parse_spec* ps)
+{
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+  assert(ps->magic == PARSE_SPEC_MAGIC);
+#endif
+
+  printf("spec %p (%u): %s",
+	 (void*) ps,
+	 ps->name_array_length,
+	 ps->flags & MLOG_CONTEXT_EXPLICIT_STATE ? "+" : "-"
+	 );
+  unsigned int i;
+  char end = 0;
+  for ( i = 0; i < ps->name_array_length; i++ )
+    {
+      if ( i < ps->name_array_length - 1 )
+	end = 0;
+      else
+	end = 1;
+
+      printf("%s%s%s",
+	     ps->name_array[i],
+	     end ? "" : CONTEXT_NAME_SEPARATOR,
+	     end ? "\n" : "");
+    }
+
+  return 1;
+}
+#endif	/* 0 */
+
 static void
 do_test(const char* spec)
 {
