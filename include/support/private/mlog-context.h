@@ -96,8 +96,7 @@ struct __mlog_context
 #endif
 
 #ifdef __cplusplus
-extern "C"
-{
+}
 #endif
 
 #endif	/* SUPPORT_PRIVATE_MLOG_CONTEXT_H */
