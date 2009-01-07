@@ -107,7 +107,7 @@ do_test(const char* spec)
       cmlog(C, V_DEBUG, err);	/* invisible */
       cmlog(D, V_DEBUG, err);	/* invisible */
       cmlog(E, V_DEBUG, err);	/* invisible */
-      cmlog(E2, V_DEBUG, ok);	/* visible */
+      cmlog(E2, V_DEBUG, err);	/* invisible */
       mark();
 
       /* shouldn't do anything (D has never been explicitly set) */
@@ -117,7 +117,7 @@ do_test(const char* spec)
       cmlog(C, V_DEBUG, err);	/* invisible */
       cmlog(D, V_DEBUG, err);	/* invisible */
       cmlog(E, V_DEBUG, err);	/* invisible */
-      cmlog(E2, V_DEBUG, ok);	/* visible */
+      cmlog(E2, V_DEBUG, err);	/* invisible */
       mark();
 
       /* should activate D. */
@@ -127,7 +127,7 @@ do_test(const char* spec)
       cmlog(C, V_DEBUG, err);	/* invisible */
       cmlog(D, V_DEBUG, ok);	/* visible */
       cmlog(E, V_DEBUG, err);	/* invisible */
-      cmlog(E2, V_DEBUG, ok);	/* visible */
+      cmlog(E2, V_DEBUG, err);	/* invisible */
       mark();
 
       /* should activate C, E  */
