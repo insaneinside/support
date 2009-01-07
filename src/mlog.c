@@ -114,7 +114,3 @@ mlog_set_level(const mlog_loglevel_t l)
   mloglevel = LIMLEVEL(l);
   return mloglevel;
 }
-
-#ifdef __cplusplus
-}
-#endif

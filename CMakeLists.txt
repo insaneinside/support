@@ -68,11 +68,41 @@ install(DIRECTORY
 #
 ################################################################
 
+set(SPT_WARN_FLAGS
+  -Wall
+  -Wfloat-equal
+  -Wno-long-long
+  -Wno-variadic-macros
+  -Wpointer-arith
+  -Wsequence-point
+  -Wstrict-aliasing
+  -Wswitch
+  -Wunused
+  -pedantic
+  )
+
+macro(append_flags VARIABLE)
+  # Convert from a string to a list
+  separate_arguments("${VARIABLE}")
+
+  # Append the flags
+  list(APPEND "${VARIABLE}" ${ARGN})
+  list(REMOVE_DUPLICATES "${VARIABLE}")
+
+  # Convert back to a string
+  string(REPLACE ";" " " "${VARIABLE}" "${${VARIABLE}}")
+  set("${VARIABLE}" "${${VARIABLE}}" PARENT_SCOPE)
+endmacro(append_flags)
+
+append_flags(CMAKE_C_FLAGS ${SPT_WARN_FLAGS} --std=c99)
+append_flags(CMAKE_CXX_FLAGS ${SPT_WARN_FLAGS})
+
 add_subdirectory(src)
 
-if(BUILD_TESTING)
+if("${CMAKE_HOME_DIRECTORY}" STREQUAL "${Support_SOURCE_DIR}")
+  set(BUILD_TESTING 1)
   add_subdirectory(tests)
-endif(BUILD_TESTING)
+endif("${CMAKE_HOME_DIRECTORY}" STREQUAL "${Support_SOURCE_DIR}")
 
 # Create a CMake export file for the build tree
-export(TARGETS ${library_targets} FILE support.cmake)
+export(TARGETS ${SPT_LIBRARY_TARGETS} FILE support.cmake)

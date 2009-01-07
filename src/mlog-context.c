@@ -11,6 +11,7 @@
 #define CONTEXT_NAME_SEPARATOR "."
 #define CONTEXT_NAME_SEPARATOR_LENGTH 1
 #define CMLOG_FORMAT "[%s] %s"
+#define CMLOG_FORMAT_NONAME "%s"
 static unsigned long int context_id_base = 0;
 static dllist_t* parse_spec_list = NULL;
 
@@ -41,36 +42,6 @@ struct parse_spec
   char** name_array;
 };
 
-int
-_print_pspec(const struct parse_spec* ps)
-{
-#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
-  assert(ps->magic == PARSE_SPEC_MAGIC);
-#endif
-
-  printf("spec %p (%d): %s",
-	 ps,
-	 ps->name_array_length,
-	 ps->flags & MLOG_CONTEXT_EXPLICIT_STATE ? "+" : "-"
-	 );
-  unsigned int i;
-  char end = 0;
-  for ( i = 0; i < ps->name_array_length; i++ )
-    {
-      if ( i < ps->name_array_length - 1 )
-	end = 0;
-      else
-	end = 1;
-
-      printf("%s%s%s",
-	     ps->name_array[i],
-	     end ? "" : CONTEXT_NAME_SEPARATOR,
-	     end ? "\n" : "");
-    }
-
-  return 1;
-}
-
 #define LEVEL(cmlog_flags)	(cmlog_flags & MLOG_LOGLEVEL_MASK )
 
 /** Build the full name that should be assigned to a context.
@@ -83,9 +54,11 @@ context_build_full_name(const mlog_context_t* context)
   char* to = NULL;
   char* lastto = NULL;
 
-  /* If this is not a subcontext, just use the immediate name. */
-  if ( ! context->parent )
-    return context->name;/* strdup(context->name); */
+  /* If this is not a subcontext, or the parent's name is hidden, just
+   * use the immediate name.
+   */
+  if ( context->parent == NULL || context->parent->flags & MLOG_CONTEXT_HIDE_NAME )
+    return context->name;
 
   /* Calculate full_name buffer size. */
   left =
@@ -220,6 +193,7 @@ _fe_apply_pspecs(dllist_t* node, const void* udata)
     {
       free(ps);
       parse_spec_list = dllist_remove_node(parse_spec_list, node);
+      return 0;
     }
   else
     return 1;
@@ -402,7 +376,7 @@ mlog_context_reset(mlog_context_t* context)
 static struct parse_spec*
 _parse_single_spec(const char* _spec, const size_t _length)
 {
-  if ( _length < 2 || *_spec != '+' && *_spec != '-' )
+  if ( _length < 2 || ( *_spec != '+' && *_spec != '-' ) )
     return NULL;
 
   size_t num_elems = 1;
@@ -516,11 +490,14 @@ cmlog_real(const mlog_context_t* context, const unsigned long spec, const char* 
   size_t ncfmt = -1;
   int r = -1;
 
-  if ( ! mlog_context_state(context->flags) )
+  if ( ! mlog_context_active(context) )
     return 0;
 
   if ( mlog_get_level() < lvl )
     return 0;
+  const char* asfmt = CMLOG_FORMAT;
+  if ( context->flags & MLOG_CONTEXT_HIDE_NAME )
+    asfmt = CMLOG_FORMAT_NONAME;
 
   va_start(ap, fmt);
 

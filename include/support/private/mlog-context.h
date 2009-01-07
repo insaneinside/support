@@ -24,8 +24,12 @@ enum mlog_context_flags
 
     /** Indicates the (in)active state of the implicit policy.
      */
-    MLOG_CONTEXT_IMPLICIT_STATE	= 1 << 2
+    MLOG_CONTEXT_IMPLICIT_STATE	= 1 << 2,
 
+    /** If set, the name of a context and any parent context(s) will
+     * be hidden when messages are logged to that context.
+     */
+    MLOG_CONTEXT_HIDE_NAME = 1 << 3
 };
 
 struct __mlog_context
@@ -72,7 +76,7 @@ struct __mlog_context
  *
  * @param cxt A pointer to the context
  */
-#define mlog_context_active(cxt) mlog_context_state(cxt->flags)
+#define mlog_context_active(cxt) ( MLOG_IS_CONTEXT(cxt) ? mlog_context_state(cxt->flags) : 0 )
 
 /** @copybrief mlog_context_active
  *
@@ -92,8 +96,7 @@ struct __mlog_context
 #endif
 
 #ifdef __cplusplus
-extern "C"
-{
+}
 #endif
 
 #endif	/* SUPPORT_PRIVATE_MLOG_CONTEXT_H */

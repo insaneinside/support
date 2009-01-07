@@ -1,5 +1,5 @@
 set(SPT_SHARED_TARGET_SUFFIX "" CACHE INTERNAL "Suffix to use on the shared target")
-set(SPT_STATIC_TARGET_SUFFIX "" CACHE INTERNAL "Suffix to use on the shared target")
+set(SPT_STATIC_TARGET_SUFFIX "" CACHE INTERNAL "Suffix to use on the static target")
 set(SUPPORT_LIBRARY "support"
   CACHE STRING "Name of the default library target for linking")
 
