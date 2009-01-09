@@ -1,6 +1,7 @@
 #include <malloc.h>
 #include <assert.h>
 #include <string.h>
+#include <support/support-config.h>
 #include <support/dllist.h>
 #include <support/mlog.h>
 
@@ -17,7 +18,9 @@ dllist_free_node(dllist_t* node)
   DEBUG(mlog(V_DEBUG | F_NONEWLINE, "%s: freeing %p... ", __func__, node);)
   if ( node )
     {
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
       node->magic = 0;
+#endif
       free(node);
     }
   DEBUG(mlog(V_DEBUG, "done.");)
@@ -47,7 +50,7 @@ _fe_insert_sorted(dllist_t* node, const void* udata)
 }
 
 
-inline dllist_t*
+dllist_t*
 dllist_alloc()
 {
   dllist_t* out;
@@ -58,39 +61,46 @@ dllist_alloc()
       return NULL;
     }
   DEBUG(mlog(V_DEBUG, "%s: allocated %p", __func__, out);)
-  out->prev = NULL;
-  out->next = NULL;
-  out->data = NULL;
 
+  memset(out, 0, sizeof(dllist_t));
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
   out->magic = DLLIST_MAGIC;
-
+#endif
   return out;
 }
 
-inline dllist_t*
+dllist_t*
 dllist_node(void* data)
 {
-  dllist_t* out;
+  dllist_t* out = NULL;;
   out = dllist_alloc();
-  out->data = data;
+  if ( out )
+    out->data = data;
   return out;
 }
 
 dllist_t*
 dllist_append(dllist_t* list, void* data)
 {
-  dllist_t* last;
-
-  if ( list )
+  if ( DLLIST_IS_NODE(list) )
     {
+      dllist_t* last = NULL;
+
       last = dllist_last(list);
 
-      last->next = dllist_node(data);
-      last->next->next = NULL;
-      last->next->prev = last;
+      if ( last )
+	{
+	  last->next = dllist_node(data);
+	  last->next->next = NULL;
+	  last->next->prev = last;
+	}
+      else
+	return NULL;
     }
   else
-    list = dllist_node(data);	/* new list */
+    {
+      list = dllist_node(data);	/* new list */
+    }
 
 
   return list;
@@ -102,7 +112,7 @@ dllist_prepend(dllist_t* list, void* data)
 {
   dllist_t* first;
 
-  if ( list )
+  if ( DLLIST_IS_NODE(list) )
     {
       first = dllist_first(list);
 
@@ -178,7 +188,7 @@ dllist_t*
 dllist_remove(dllist_t* list, const void* data)
 {
   dllist_t* node = dllist_find(list, data);
-  if ( node )
+  if ( DLLIST_IS_NODE(node) )
     return dllist_remove_node(list, node);
   else
     return list;
@@ -254,7 +264,7 @@ dllist_getpos(dllist_t* node)
 dllist_t*
 dllist_first(dllist_t* node)
 {
-  if ( !node )
+  if ( !DLLIST_IS_NODE(node) )
     return NULL;
 
   while ( node->prev )
@@ -266,10 +276,10 @@ dllist_first(dllist_t* node)
 dllist_t*
 dllist_last(dllist_t* node)
 {
-  if ( !node )
+  if ( !DLLIST_IS_NODE(node) )
     return NULL;
 
-  while ( node->next )
+  while ( node && node->next )
     node = node->next;
 
   return node;
@@ -280,7 +290,7 @@ dllist_size(dllist_t* list)
 {
   dllist_t* node;
   int i = 0;
-  if ( !list )
+  if ( !DLLIST_IS_NODE(list) )
     return 0;
 
   node = dllist_first(list);
@@ -298,7 +308,7 @@ dllist_size(dllist_t* list)
 void
 dllist_free(dllist_t* list)
 {
-  if ( ! list )
+  if ( ! DLLIST_IS_NODE(list) )
     return ;
 
   dllist_foreach(list, &_fe_list_free, NULL);
@@ -308,11 +318,12 @@ dllist_free(dllist_t* list)
 void
 dllist_foreach(dllist_t* list, dllist_func foreachfunc, const void* userdata)
 {
-  dllist_t* node, *next;
-  node = dllist_first(list);
-
-  if ( ! list )
+  if ( ! DLLIST_IS_NODE(list) )
     return;
+
+  dllist_t* node, *next;
+  node = list;
+
 
   do
     {
@@ -327,7 +338,7 @@ dllist_foreach(dllist_t* list, dllist_func foreachfunc, const void* userdata)
 
       node = next;
     }
-  while ( node != NULL );
+  while ( DLLIST_IS_NODE(node) );
 
   return;
 }
@@ -375,7 +386,7 @@ dllist_insert_node_sorted(dllist_t* list, dllist_t* node, dllist_cmpfunc cf)
   int cr = 0, lr = 0;
   cur = list;
 
-  if ( !list )
+  if ( !DLLIST_IS_NODE(list) )
     return node;
 
   do
