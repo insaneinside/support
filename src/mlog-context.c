@@ -205,7 +205,7 @@ mlog_context_create(mlog_context_t* parent,
 {
   mlog_context_t* o = NULL;
 
-  if ( ! name || ! description )
+  if ( ! name /*|| ! description*/ )
     return NULL;
 
   if ( ! ( o = (mlog_context_t*) malloc(sizeof(mlog_context_t)) ) )
@@ -221,7 +221,8 @@ mlog_context_create(mlog_context_t* parent,
   o->magic = CONTEXT_MAGIC;
 #endif
   o->name = strdup(name);
-  o->description = strdup(description);
+  if ( description )
+    o->description = strdup(description);
 
   if ( parent )
     {
@@ -321,7 +322,9 @@ context_inherit_state(mlog_context_t* context)
 {
   if ( context->parent )
     {
-      if ( mlog_context_state(context->parent->flags) )
+      context->flags &= ~MLOG_CONTEXT_POLICY; /* set implicit policy */
+
+      if ( mlog_context_active(context->parent) )
 	context->flags |= MLOG_CONTEXT_IMPLICIT_STATE;
       else
 	context->flags &= ~MLOG_CONTEXT_IMPLICIT_STATE;
@@ -489,6 +492,7 @@ cmlog_real(const mlog_context_t* context, const unsigned long spec, const char* 
   char* cfmt = NULL;
   size_t ncfmt = -1;
   int r = -1;
+  static char* last_full_name = NULL;
 
   if ( ! mlog_context_active(context) )
     return 0;
@@ -507,6 +511,7 @@ cmlog_real(const mlog_context_t* context, const unsigned long spec, const char* 
 
 
   r = mlogv(spec, cfmt, ap);
+  last_full_name = context->full_name;
   free(cfmt);
   return r;
 }
