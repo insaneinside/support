@@ -2,9 +2,10 @@
 #include <mcheck.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <support/mlog.h>
 #include <assert.h>
 #include <string.h>
+
+#include <support/spt-context.h>
 #include "timeutil.h"
 
 #if 0
@@ -18,7 +19,7 @@ _print_pspec(const struct parse_spec* ps)
   printf("spec %p (%u): %s",
 	 (void*) ps,
 	 ps->name_array_length,
-	 ps->flags & MLOG_CONTEXT_EXPLICIT_STATE ? "+" : "-"
+	 ps->flags & SPT_CONTEXT_EXPLICIT_STATE ? "+" : "-"
 	 );
   unsigned int i;
   char end = 0;
@@ -31,7 +32,7 @@ _print_pspec(const struct parse_spec* ps)
 
       printf("%s%s%s",
 	     ps->name_array[i],
-	     end ? "" : CONTEXT_NAME_SEPARATOR,
+	     end ? "" : SPT_CONTEXT_NAME_SEPARATOR,
 	     end ? "\n" : "");
     }
 
@@ -56,26 +57,26 @@ do_test(const char* spec)
     {
       ok = "Test!";
       begin("Parsing spec string");
-      int r = mlog_context_parse_spec(spec);
+      int r = spt_context_parse_spec(spec);
       end();
-      fprintf(stderr, "    -> mlog_context_parse_spec returned %d\n", r);
+      fprintf(stderr, "    -> spt_context_parse_spec returned %d\n", r);
     }
 
   begin("Creating contexts");
-  mlog_context_t *all, *A, *B, *C, *D, *E, *E2;
-  all = mlog_context_create(NULL, "all", "Test hidden context");
-  all->flags |= MLOG_CONTEXT_HIDE_NAME;
-  A = mlog_context_create(all, "A", "Test context A");
-  B = mlog_context_create(A, "B", "Test context B");
-  C = mlog_context_create(A, "C", "Test context C");
-  D = mlog_context_create(C, "D", "Test context D");
-  E = mlog_context_create(C, "E", "Test context E");
-  E2 = mlog_context_create(E, "E", "Test context E (number two)");
+  spt_context_t *all, *A, *B, *C, *D, *E, *E2;
+  all = spt_context_create(NULL, "all", "Test hidden context");
+  all->flags |= SPT_CONTEXT_HIDE_NAME;
+  A = spt_context_create(all, "A", "Test context A");
+  B = spt_context_create(A, "B", "Test context B");
+  C = spt_context_create(A, "C", "Test context C");
+  D = spt_context_create(C, "D", "Test context D");
+  E = spt_context_create(C, "E", "Test context E");
+  E2 = spt_context_create(E, "E", "Test context E (number two)");
   end();
 
   /* Should activate all contexts. */
   if ( !spec )
-    mlog_context_enable(A);	/* implicitly enables B, C, D, E */
+    spt_context_enable(A);	/* implicitly enables B, C, D, E */
   else
     begin_nl("Printing test messages for spec-enabled contexts");
 
@@ -89,7 +90,7 @@ do_test(const char* spec)
   if ( !spec )
     {
       /* should deactivate C, D, E */
-      mlog_context_disable(C);	/* implicitly disables D, E */
+      spt_context_disable(C);	/* implicitly disables D, E */
       cmlog(A, V_DEBUG, ok);	/* visible */
       cmlog(B, V_DEBUG, ok);	/* visible */
       cmlog(C, V_DEBUG, err);	/* invisible */
@@ -99,7 +100,7 @@ do_test(const char* spec)
       mark();
 
       /* shouldn't do anything (D has never been explicitly set) */
-      mlog_context_reset(D);
+      spt_context_reset(D);
       cmlog(A, V_DEBUG, ok);	/* visible */
       cmlog(B, V_DEBUG, ok);	/* visible */
       cmlog(C, V_DEBUG, err);	/* invisible */
@@ -109,7 +110,7 @@ do_test(const char* spec)
       mark();
 
       /* should activate D. */
-      mlog_context_enable(D);
+      spt_context_enable(D);
       cmlog(A, V_DEBUG, ok);	/* visible */
       cmlog(B, V_DEBUG, ok);	/* visible */
       cmlog(C, V_DEBUG, err);	/* invisible */
@@ -119,7 +120,7 @@ do_test(const char* spec)
       mark();
 
       /* should activate C, E  */
-      mlog_context_reset(C);
+      spt_context_reset(C);
       cmlog(A, V_DEBUG, ok);	/* visible */
       cmlog(B, V_DEBUG, ok);	/* visible */
       cmlog(C, V_DEBUG, ok);	/* visible */
@@ -129,7 +130,7 @@ do_test(const char* spec)
       mark();
 
       /* should deactivate C, E */
-      mlog_context_disable(C);
+      spt_context_disable(C);
       cmlog(A, V_DEBUG, ok);	/* visible */
       cmlog(B, V_DEBUG, ok);	/* visible */
       cmlog(C, V_DEBUG, err);	/* invisible */
@@ -142,9 +143,9 @@ do_test(const char* spec)
   /* Could just destroy A recursively, but this should -- must -- work
    * too.
    */
-  mlog_context_destroy(A);
-  mlog_context_destroy(B);
-  mlog_context_destroy_recursive(C);
+  spt_context_destroy(A);
+  spt_context_destroy(B);
+  spt_context_destroy_recursive(C);
   end();
 }
 

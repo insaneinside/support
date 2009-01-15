@@ -1,6 +1,7 @@
-#ifndef SUPPORT_PRIVATE_MLOG_CONTEXT_H
-#define SUPPORT_PRIVATE_MLOG_CONTEXT_H
+#ifndef SUPPORT_PRIVATE_SPT_CONTEXT_H
+#define SUPPORT_PRIVATE_SPT_CONTEXT_H
 
+#include <support/support-config.h>
 #include <support/dllist.h>
 
 #ifdef __cplusplus
@@ -10,32 +11,34 @@ extern "C"
 
 /** Flags that detail the state of a log context.
  */
-enum mlog_context_flags
+enum spt_context_flags
   {
     /** Indicates which of the two policies -- implicit or explicit --
      * currently governs the context.  If set, the explicit policy is
      * active.
      */
-    MLOG_CONTEXT_POLICY	= 1 << 0,
+    SPT_CONTEXT_POLICY	= 1 << 0,
 
     /** Indicates the (in)active state of the explicit policy.
      */
-    MLOG_CONTEXT_EXPLICIT_STATE	= 1 << 1,
+    SPT_CONTEXT_EXPLICIT_STATE	= 1 << 1,
 
     /** Indicates the (in)active state of the implicit policy.
      */
-    MLOG_CONTEXT_IMPLICIT_STATE	= 1 << 2,
+    SPT_CONTEXT_IMPLICIT_STATE	= 1 << 2,
 
     /** If set, the name of a context and any parent context(s) will
      * be hidden when messages are logged to that context.
      */
-    MLOG_CONTEXT_HIDE_NAME = 1 << 3
+    SPT_CONTEXT_HIDE_NAME = 1 << 3
 };
 
-struct __mlog_context
+struct __spt_context
 {
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
   /** Magic number. */
   uint32_t magic;
+#endif
 
   /** Context ID */
   unsigned long int id;
@@ -43,60 +46,56 @@ struct __mlog_context
   /** Symbolic name */
   char* name;
 
-  /** Fully-scoped name */
+  /** @internal Fully-scoped name */
   char* full_name;
 
+#ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
   /** Description string, in case the user asks for a list of available contexts */
   char* description;
+#endif
 
-  /** Hash of @v name, to speed up symbolic lookups.
+  /** Output handler for this context.
    */
-  /* hash_t name_hash; */
-
-  /* /\** Non-zero if the context is active.
-   *  *\/
-   * int active; */
+  spt_context_handler_t output_handler;
 
   /** State flags.
-   * @see mlog_context_flags
+   * @see spt_context_flags
    */
   unsigned long int flags;
 
   /** List of child contexts */
   dllist_t* children;
-  /* struct __mlog_context* children;
-   * unsigned int num_children; */
 
   /** If not NULL, the context of which this is a subcontext.
    */
-  struct __mlog_context* parent;
+  struct __spt_context* parent;
 };
 
 /** Determine the state -- active or inactive -- of a context.
  *
  * @param cxt A pointer to the context
  */
-#define mlog_context_active(cxt) ( MLOG_IS_CONTEXT(cxt) ? mlog_context_state(cxt->flags) : 0 )
+#define spt_context_active(cxt) ( SPT_IS_CONTEXT(cxt) ? spt_context_state(cxt->flags) : 0 )
 
-/** @copybrief mlog_context_active
+/** @copybrief spt_context_active
  *
  * @param flags Context's `flags' variable.
  */
-#define mlog_context_state(flags)		\
-  ( flags & MLOG_CONTEXT_POLICY			\
-    ? flags & MLOG_CONTEXT_EXPLICIT_STATE	\
-    : flags & MLOG_CONTEXT_IMPLICIT_STATE )
+#define spt_context_state(flags)		\
+  ( flags & SPT_CONTEXT_POLICY			\
+    ? flags & SPT_CONTEXT_EXPLICIT_STATE	\
+    : flags & SPT_CONTEXT_IMPLICIT_STATE )
 
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
-#define CONTEXT_MAGIC  ( ( 'M' << 3 ) + ( 'C' << 2 ) + ( 'X' << 1 ) + 'T' )
-#define MLOG_IS_CONTEXT(cxt) \
-  ( cxt && ((mlog_context_t*) cxt)->magic == CONTEXT_MAGIC )
+#define SPT_CONTEXT_MAGIC  ( ( 'M' << 3 ) + ( 'C' << 2 ) + ( 'X' << 1 ) + 'T' )
+#define SPT_IS_CONTEXT(cxt) \
+  ( cxt && ((spt_context_t*) cxt)->magic == SPT_CONTEXT_MAGIC )
 #else
-#define MLOG_IS_CONTEXT(cxt) 1
+#define SPT_IS_CONTEXT(cxt) (cxt)
 #endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* SUPPORT_PRIVATE_MLOG_CONTEXT_H */
+#endif	/* SUPPORT_PRIVATE_SPT_pCONTEXT_H */

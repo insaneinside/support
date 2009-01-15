@@ -20,7 +20,7 @@ macro(option_maybe var doc default)
 endmacro(option_maybe)
 
 # Compile-time options
-option_maybe(SPT_ENABLE_MLOG_CONTEXT "Enable support for logging contexts" ON)
+option_maybe(SPT_ENABLE_CONTEXT "Enable support for logging contexts" ON)
 option_maybe(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
 option_maybe(SPT_ENABLE_CONSISTENCY_CHECKS "Enable run-time consistency checks" ON)
 
@@ -28,11 +28,11 @@ option_maybe(SPT_ENABLE_CONSISTENCY_CHECKS "Enable run-time consistency checks" 
 option_maybe(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
 option_maybe(SPT_BUILD_STATIC "Build a static version of the library" ON)
 
-if(SPT_ENABLE_MLOG_CONTEXT)
-  set(SPT_ENABLE_MLOG_CONTEXT 1)
-else(SPT_ENABLE_MLOG_CONTEXT)
-  set(SPT_ENABLE_MLOG_CONTEXT)
-endif(SPT_ENABLE_MLOG_CONTEXT)
+if(SPT_ENABLE_CONTEXT)
+  set(SPT_ENABLE_CONTEXT 1)
+else(SPT_ENABLE_CONTEXT)
+  set(SPT_ENABLE_CONTEXT)
+endif(SPT_ENABLE_CONTEXT)
 
 if(SPT_VECT_CACHE_MAGNITUDE)
   set(SPT_VECT_CACHE_MAGNITUDE 1)

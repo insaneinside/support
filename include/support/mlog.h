@@ -3,9 +3,6 @@
 
 #include <stdarg.h>
 #include <support/support-config.h>
-#ifdef SPT_ENABLE_MLOG_CONTEXT
-#include <support/mlog-context.h>
-#endif
 
 /** @defgroup mlog MLog: Lightweight Logging Utility
  *

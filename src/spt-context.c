@@ -5,7 +5,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include <support/mlog.h>
+#include <support/support-config.h>
+#include <support/spt-context.h>
 #include <support/macro.h>
 
 #define CONTEXT_NAME_SEPARATOR "."
@@ -47,7 +48,7 @@ struct parse_spec
 /** Build the full name that should be assigned to a context.
  */
 static char*
-context_build_full_name(const mlog_context_t* context)
+context_build_full_name(const spt_context_t* context)
 {
   size_t left = -1;
   char* out = NULL;
@@ -57,7 +58,7 @@ context_build_full_name(const mlog_context_t* context)
   /* If this is not a subcontext, or the parent's name is hidden, just
    * use the immediate name.
    */
-  if ( context->parent == NULL || context->parent->flags & MLOG_CONTEXT_HIDE_NAME )
+  if ( context->parent == NULL || context->parent->flags & SPT_CONTEXT_HIDE_NAME )
     return context->name;
 
   /* Calculate full_name buffer size. */
@@ -87,7 +88,10 @@ context_build_full_name(const mlog_context_t* context)
   /* `to' should point to the nul byte at the end of the string. */
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
   if ( left != 1 )
-    mlog(V_DEBUG, "In %s: output buffer has incorrect size (%d left).", __func__, left);
+    {
+      fprintf(stderr, "ERROR: In %s: output buffer has incorrect size (%u left).", __func__, (unsigned int) left);
+      abort();
+    }
 #endif
   return out;
 }
@@ -97,9 +101,9 @@ context_build_full_name(const mlog_context_t* context)
  */
 
 static void
-context_destroy_single(mlog_context_t* context)
+context_destroy_single(spt_context_t* context)
 {
-  if ( MLOG_IS_CONTEXT(context) )
+  if ( SPT_IS_CONTEXT(context) )
     {
       context->magic = 0;
 
@@ -108,36 +112,38 @@ context_destroy_single(mlog_context_t* context)
 	free(context->full_name);
       if ( context->name )
 	free(context->name);
+#ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
       if ( context->description )
 	free(context->description);
+#endif
       free(context);
     }
 
 }
 
-/* /\** Call mlog_context_destroy on a node's data.
+/* /\** Call spt_context_destroy on a node's data.
  *  *\/
  * static int
  * _fe_destroy_context(dllist_t* node, const void* udata)
  * {
- *   if ( node && MLOG_IS_CONTEXT(node->data) )
+ *   if ( node && SPT_IS_CONTEXT(node->data) )
  *     {
- *       mlog_context_destroy((mlog_context_t*) (node->data));
+ *       spt_context_destroy((spt_context_t*) (node->data));
  *       node->data = NULL;
  *     }
  *   return 1;
  * } */
 
-/** Call mlog_context_destroy_recursive on a node's data.
+/** Call spt_context_destroy_recursive on a node's data.
  */
 static int
 _fe_destroy_context_recursive(dllist_t* node, const void* udata)
 {
   if ( node )
     {
-      mlog_context_t* cxt = (mlog_context_t*) (node->data);
+      spt_context_t* cxt = (spt_context_t*) (node->data);
       if ( cxt->children )
-	mlog_context_destroy_recursive(cxt);
+	spt_context_destroy_recursive(cxt);
       else
 	context_destroy_single(cxt);
       node->data = NULL;
@@ -152,23 +158,23 @@ _fe_unparent_context(dllist_t* node, const void* udata)
 {
   if ( node )/* && node->data ) */
     {
-      mlog_context_t* context = (mlog_context_t*) (node->data);
+      spt_context_t* context = (spt_context_t*) (node->data);
       context->parent = NULL;
     }
   return 1;
 }
 
 static int
-_apply_pspec(const struct parse_spec* ps, mlog_context_t* cxt)
+_apply_pspec(const struct parse_spec* ps, spt_context_t* cxt)
 {
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
-  assert(cxt->magic == CONTEXT_MAGIC);
+  assert(cxt->magic == SPT_CONTEXT_MAGIC);
   assert(ps->magic == PARSE_SPEC_MAGIC);
 #endif
   /* printf("%p: ", cxt);
    * _print_pspec(ps); */
   int i;
-  const mlog_context_t* cc = cxt;
+  const spt_context_t* cc = cxt;
   for ( i = ps->name_array_length - 1; i > -1 && cc != NULL; --i )
     {
       if ( strcmp(cc->name, ps->name_array[i]) )
@@ -176,10 +182,10 @@ _apply_pspec(const struct parse_spec* ps, mlog_context_t* cxt)
       cc = cc->parent;
     }
   cxt->flags = (cxt->flags & ~(ps->mask)) | (ps->flags & ps->mask);
-  /* if ( ps->flags & MLOG_CONTEXT_EXPLICIT_STATE )
-   *   mlog_context_enable(cxt);
+  /* if ( ps->flags & SPT_CONTEXT_EXPLICIT_STATE )
+   *   spt_context_enable(cxt);
    * else
-   *   mlog_context_disable(cxt); */
+   *   spt_context_disable(cxt); */
 
   return 1;
 }
@@ -188,7 +194,7 @@ static int
 _fe_apply_pspecs(dllist_t* node, const void* udata)
 {
   struct parse_spec* ps = (struct parse_spec*) node->data;
-  mlog_context_t* cxt = (mlog_context_t*) udata;
+  spt_context_t* cxt = (spt_context_t*) udata;
   if ( _apply_pspec(ps, cxt) )
     {
       free(ps);
@@ -199,36 +205,45 @@ _fe_apply_pspecs(dllist_t* node, const void* udata)
     return 1;
 }
 
-mlog_context_t*
-mlog_context_create(mlog_context_t* parent,
-		    const char* name, const char* description)
+#ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
+  spt_context_t*
+  spt_context_create(spt_context_t* parent,
+		     const char* name,
+		     const char* description)
+#else
+  spt_context_t*
+  spt_context_create(spt_context_t* parent,
+		     const char* name)
+#endif
 {
-  mlog_context_t* o = NULL;
+  spt_context_t* o = NULL;
 
   if ( ! name /*|| ! description*/ )
     return NULL;
 
-  if ( ! ( o = (mlog_context_t*) malloc(sizeof(mlog_context_t)) ) )
+  if ( ! ( o = (spt_context_t*) malloc(sizeof(spt_context_t)) ) )
     {
       perror("malloc");
       return NULL;
     }
 
-  memset(o, 0, sizeof(mlog_context_t));
+  memset(o, 0, sizeof(spt_context_t));
 
   o->id = context_id_base++;
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
-  o->magic = CONTEXT_MAGIC;
+  o->magic = SPT_CONTEXT_MAGIC;
 #endif
   o->name = strdup(name);
+#ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
   if ( description )
     o->description = strdup(description);
+#endif
 
   if ( parent )
     {
       o->parent = parent;
       parent->children = dllist_append(parent->children, o);
-      mlog_context_reset(o);
+      spt_context_reset(o);
     }
 
   o->full_name = context_build_full_name(o);
@@ -236,7 +251,9 @@ mlog_context_create(mlog_context_t* parent,
   if ( !o->full_name )
     {
       free(o->name);
+#ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
       free(o->description);
+#endif
       free(o);
       return NULL;
     }
@@ -248,7 +265,7 @@ mlog_context_create(mlog_context_t* parent,
 }
 
 void
-mlog_context_destroy(mlog_context_t* context)
+spt_context_destroy(spt_context_t* context)
 {
   if ( ! context )
     return;
@@ -265,7 +282,7 @@ mlog_context_destroy(mlog_context_t* context)
 }
 
 void
-mlog_context_destroy_recursive(mlog_context_t* context)
+spt_context_destroy_recursive(spt_context_t* context)
 {
   if ( ! context )
     return;
@@ -283,18 +300,18 @@ mlog_context_destroy_recursive(mlog_context_t* context)
  * Context (de)activation and policy management.
  */
 
-static void context_inherit_state(mlog_context_t* context);
+static void context_inherit_state(spt_context_t* context);
 
 /* /\** Reset -- to implicit (inherited) -- the context's state policy.
  *  *\/
  * static int
  * _fe_reset_policy(dllist_t* node, const void* udata)
  * {
- *   mlog_context_t* context = NULL;
+ *   spt_context_t* context = NULL;
  *   if ( node && node->data )
  *     {
- *       context = (mlog_context_t*) (node->data);
- *       mlog_context_reset(context);
+ *       context = (spt_context_t*) (node->data);
+ *       spt_context_reset(context);
  *     }
  *   return 1;
  * } */
@@ -305,10 +322,10 @@ static void context_inherit_state(mlog_context_t* context);
 static int
 _fe_inherit_state(dllist_t* node, const void* udata)
 {
-  mlog_context_t* context = NULL;
+  spt_context_t* context = NULL;
   if ( node && node->data )
     {
-      context = (mlog_context_t*) (node->data);
+      context = (spt_context_t*) (node->data);
       context_inherit_state(context);
     }
   return 1;
@@ -318,16 +335,16 @@ _fe_inherit_state(dllist_t* node, const void* udata)
  *  context.
  */
 static void
-context_inherit_state(mlog_context_t* context)
+context_inherit_state(spt_context_t* context)
 {
   if ( context->parent )
     {
-      context->flags &= ~MLOG_CONTEXT_POLICY; /* set implicit policy */
+      context->flags &= ~SPT_CONTEXT_POLICY; /* set implicit policy */
 
-      if ( mlog_context_active(context->parent) )
-	context->flags |= MLOG_CONTEXT_IMPLICIT_STATE;
+      if ( spt_context_active(context->parent) )
+	context->flags |= SPT_CONTEXT_IMPLICIT_STATE;
       else
-	context->flags &= ~MLOG_CONTEXT_IMPLICIT_STATE;
+	context->flags &= ~SPT_CONTEXT_IMPLICIT_STATE;
     }
 
   if ( context->children )
@@ -336,10 +353,10 @@ context_inherit_state(mlog_context_t* context)
 
 
 void
-mlog_context_enable(mlog_context_t* context/*, const unsigned int recursive*/)
+spt_context_enable(spt_context_t* context/*, const unsigned int recursive*/)
 {
-  context->flags |= MLOG_CONTEXT_POLICY; /* set policy explicit */
-  context->flags |= MLOG_CONTEXT_EXPLICIT_STATE; /* enable */
+  context->flags |= SPT_CONTEXT_POLICY; /* set policy explicit */
+  context->flags |= SPT_CONTEXT_EXPLICIT_STATE; /* enable */
 
   /* Update child contexts */
   if ( context->children )
@@ -348,10 +365,10 @@ mlog_context_enable(mlog_context_t* context/*, const unsigned int recursive*/)
 
 
 void
-mlog_context_disable(mlog_context_t* context)
+spt_context_disable(spt_context_t* context)
 {
-  context->flags |= MLOG_CONTEXT_POLICY; /* set policy explicit */
-  context->flags &= ~MLOG_CONTEXT_EXPLICIT_STATE; /* disable */
+  context->flags |= SPT_CONTEXT_POLICY; /* set policy explicit */
+  context->flags &= ~SPT_CONTEXT_EXPLICIT_STATE; /* disable */
 
   /* Update child contexts */
   if ( context->children )
@@ -360,10 +377,10 @@ mlog_context_disable(mlog_context_t* context)
 
 
 void
-mlog_context_reset(mlog_context_t* context)
+spt_context_reset(spt_context_t* context)
 {
   /* Unset policy bit (set to implicit)   */
-  context->flags &= ~MLOG_CONTEXT_POLICY;
+  context->flags &= ~SPT_CONTEXT_POLICY;
 
   /* Refresh the inherited state  */
   context_inherit_state(context);
@@ -429,16 +446,16 @@ _parse_single_spec(const char* _spec, const size_t _length)
   if ( *(ps->input) == '+' )
     {
       ps->flags
-	= MLOG_CONTEXT_POLICY	      /* explicit policy */
-	| MLOG_CONTEXT_EXPLICIT_STATE /* set to enabled */;
+	= SPT_CONTEXT_POLICY	      /* explicit policy */
+	| SPT_CONTEXT_EXPLICIT_STATE /* set to enabled */;
       ps->mask = ps->flags;
     }
   else if ( *(ps->input) == '-' )
     {
-      ps->flags = MLOG_CONTEXT_POLICY;
+      ps->flags = SPT_CONTEXT_POLICY;
       ps->mask
-	= MLOG_CONTEXT_POLICY	      /* explicit policy */
-	| MLOG_CONTEXT_EXPLICIT_STATE /* copy the 'disabled' value */;
+	= SPT_CONTEXT_POLICY	      /* explicit policy */
+	| SPT_CONTEXT_EXPLICIT_STATE /* copy the 'disabled' value */;
     }
   else
     abort();
@@ -446,7 +463,7 @@ _parse_single_spec(const char* _spec, const size_t _length)
 }
 
 int
-mlog_context_parse_spec(const char* __ispec)
+spt_context_parse_spec(const char* __ispec)
 {
   if ( !__ispec )
     return -1;
@@ -484,8 +501,10 @@ mlog_context_parse_spec(const char* __ispec)
   return count;
 }
 
+#include <support/mlog.h> 
+
 int
-cmlog_real(const mlog_context_t* context, const unsigned long spec, const char* fmt, ...)
+cmlog_real(const spt_context_t* context, const unsigned long spec, const char* fmt, ...)
 {
   va_list ap;
   mlog_loglevel_t lvl = LEVEL(spec);
@@ -494,13 +513,13 @@ cmlog_real(const mlog_context_t* context, const unsigned long spec, const char* 
   int r = -1;
   static char* last_full_name = NULL;
 
-  if ( ! mlog_context_active(context) )
+  if ( ! spt_context_active(context) )
     return 0;
 
   if ( mlog_get_level() < lvl )
     return 0;
   const char* asfmt = CMLOG_FORMAT;
-  if ( context->flags & MLOG_CONTEXT_HIDE_NAME )
+  if ( context->flags & SPT_CONTEXT_HIDE_NAME )
     asfmt = CMLOG_FORMAT_NONAME;
 
   va_start(ap, fmt);

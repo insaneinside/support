@@ -28,7 +28,7 @@ set(support_SOURCES
   )
 
 if(SPT_ENABLE_MLOG_CONTEXT)
-  list(APPEND support_SOURCES mlog-context.c)
+  list(APPEND support_SOURCES spt-context.c)
 endif(SPT_ENABLE_MLOG_CONTEXT)
 
 # Static library
