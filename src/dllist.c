@@ -2,25 +2,16 @@
 #include <assert.h>
 #include <string.h>
 #include <support/dllist.h>
-#include <support/mlog.h>
-
-#ifdef DLLIST_DEBUG
-#define DEBUG(x) x
-#else
-#define DEBUG(x)
-#endif
 
 /* local functions */
 void
 dllist_free_node(dllist_t* node)
 {
-  DEBUG(mlog(V_DEBUG | F_NONEWLINE, "%s: freeing %p... ", __func__, node);)
   if ( node )
     {
       node->magic = 0;
       free(node);
     }
-  DEBUG(mlog(V_DEBUG, "done.");)
 }
 
 static int
@@ -53,11 +44,7 @@ dllist_alloc()
   dllist_t* out;
   out = (dllist_t* ) malloc(sizeof(dllist_t));
   if ( ! out )
-    {
-      mlog(V_ERR | F_ERRNO, "%s: malloc", __func__);
-      return NULL;
-    }
-  DEBUG(mlog(V_DEBUG, "%s: allocated %p", __func__, out);)
+    return NULL;
   out->prev = NULL;
   out->next = NULL;
   out->data = NULL;
