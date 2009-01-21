@@ -23,6 +23,7 @@ endmacro(option_maybe)
 option_maybe(SPT_ENABLE_CONTEXT "Enable support for logging contexts" ON)
 option_maybe(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
 option_maybe(SPT_ENABLE_CONSISTENCY_CHECKS "Enable run-time consistency checks" ON)
+option_maybe(SPT_CONTEXT_ENABLE_DESCRIPTION "Enable context descriptions" OFF)
 
 # Build components
 option_maybe(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
@@ -45,6 +46,12 @@ if(SPT_ENABLE_CONSISTENCY_CHECKS)
 else(SPT_ENABLE_CONSISTENCY_CHECKS)
   set(SPT_ENABLE_CONSISTENCY_CHECKS)
 endif(SPT_ENABLE_CONSISTENCY_CHECKS)
+
+if(SPT_CONTEXT_ENABLE_DESCRIPTION)
+  set(SPT_CONTEXT_ENABLE_DESCRIPTION 1)
+else(SPT_CONTEXT_ENABLE_DESCRIPTION)
+  set(SPT_CONTEXT_ENABLE_DESCRIPTION)
+endif(SPT_CONTEXT_ENABLE_DESCRIPTION)
 #
 ################################################################
 
