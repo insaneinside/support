@@ -1,6 +1,7 @@
 #ifndef SUPPORT_DLLIST_H
 #define SUPPORT_DLLIST_H
 
+#include <support/support-config.h>
 #include <stdint.h>
 
 /** @defgroup dllist Double-linked lists
@@ -17,20 +18,29 @@ extern "C"
 
   typedef struct _dllist
   {
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+    uint32_t magic;
+#endif
     void *data;
 
     struct _dllist* next;
     struct _dllist* prev;
-    uint32_t magic;
   } dllist_t;
 
 #define dllist_next(node) ((*node).next)
 #define dllist_prev(node) ((*node).prev)
 
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+
 #define DLLIST_MAGIC  ( ( 'D' << 3 ) + ( 'L' << 2 ) + ( 'S' << 1 ) + 'T' )
 #define DLLIST_IS_NODE(n) \
   ( n && *((uint32_t*) n + offsetof(dllist_t, magic)) == DLLIST_MAGIC )
-/* #define DLLIST_IS_NODE(n) (n) */
+
+#else
+
+#define DLLIST_IS_NODE(n) (n)
+
+#endif	/* SPT_ENABLE_CONSISTENCY_CHECKS */
 
   typedef int (*dllist_func) (dllist_t* , const void*);
 
