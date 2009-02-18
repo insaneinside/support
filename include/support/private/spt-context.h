@@ -10,16 +10,17 @@ extern "C"
 #endif
 
 /** Flags that detail the state of a log context.
+ * @internal
  */
 enum spt_context_flags
   {
     /** Indicates which of the two policies -- implicit or explicit --
      * currently governs the context.  If set, the explicit policy is
-     * active.
+     * being used.
      */
     SPT_CONTEXT_POLICY	= 1 << 0,
 
-    /** Indicates the (in)active state of the explicit policy.
+    /** Indicates the state of the explicit policy.  If set, the explicit
      */
     SPT_CONTEXT_EXPLICIT_STATE	= 1 << 1,
 
@@ -33,6 +34,7 @@ enum spt_context_flags
     SPT_CONTEXT_HIDE_NAME = 1 << 3
 };
 
+  /** @internal */
 struct __spt_context
 {
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
@@ -98,4 +100,4 @@ struct __spt_context
 }
 #endif
 
-#endif	/* SUPPORT_PRIVATE_SPT_pCONTEXT_H */
+#endif	/* SUPPORT_PRIVATE_SPT_CONTEXT_H */

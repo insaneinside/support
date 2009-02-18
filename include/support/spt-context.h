@@ -1,3 +1,4 @@
+/* -*- Mode: C; fill-column: 80 */
 #ifndef SPT_CONTEXT_H
 #define SPT_CONTEXT_H	1
 
@@ -5,14 +6,14 @@
 
 /** @defgroup context Contexts
  *
- * Component-centric logging.  Log contexts allow for:
+ * Contexts provide a flexible logging and output framework that
+ * emphasizes both programmer and end-user control.  Log contexts
+ * allow for:
  *
  *   - Runtime activation or deactivation of a given context
  *   - Hierarchical context manipulation
  *     - Implicit activation inheritance
  *     - Explicit overriding of inherited activation states
- *
- * @{
  */
 
 #ifdef __cplusplus
@@ -20,6 +21,9 @@ extern "C"
 {
 #endif
 
+  /** @ingroup context
+   *@{
+   */
   /** Opaque object interface to the logging context system.  Use the
    * following functions to manipulate a log context.
    */
@@ -28,6 +32,7 @@ extern "C"
   /** Opaque interface to the output handler objects for spt_context.
    */
   typedef struct __spt_context_handler spt_context_handler_t;
+  /**@}*/
 
 #ifdef __cplusplus
 }
@@ -40,21 +45,84 @@ extern "C"
 extern "C"
 {
 #endif
-  /**@name Creation/Destruction
+  /** @name Output handlers
+   *  @ingroup context
+   *
+   *
+   * @{
+   */
+
+  /**@name Handler function prototypes
    *@{
    */
-  /** Create a new logging context.
+  /** Data-output function prototype.
    *
-   * @param parent @c NULL, or a context to assign as the parent context for the
-   * context being created.  Unless the created context is explicitly
-   * activated or deactivated with spt_context_enable or
-   * spt_context_disable, it will inherit the parent's activation
-   * state.
+   * <strong>Requirements:</strong> Any implementations of this
+   * function should
+   *   - Be completely thread-safe.
+   *   - Format or interpret the data only to the extent needed for
+   *     output.
+   *   - Write the data to the handler's output as appropriate.
+   *
+   * Implementations should NOT
+   *   - Modify structures pointed to by the function arguments
+   *   - Interpret or reformat the content of the data.
+   *   - Check if the context is active.  If the context is not
+   *     active, the function will not be called.
+   *
+   *
+   * @param context A reference to the context in (for) which the
+   * handler function has been called.
+   *
+   * @param data Pointer to a character buffer containing output data.
+   *
+   * @param length Number of bytes to be written.
+   *
+   * @return Number of bytes written, or &lt; 0 if an error was
+   * encountered.
+   */
+  typedef int (*spt_context_write_func_t)(const spt_context_t* context,
+					  const char* data,
+					  const ssize_t length);
+
+
+  /** Message format function
+   */
+  typedef int (*spt_context_format_func_t)(const spt_context_t* context,
+					   const spt_loglevel_t level,
+					   const char* message);
+  /**@}*/
+
+
+  typedef struct __spt_context_handler
+  {
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+    uint32_t magic;
+#endif
+    spt_context_write_func_t write;
+    spt_context_format_func_t format;
+  } spt_context_handler_t;
+  /**@}*/
+
+
+  /**@name Creation/Destruction
+   *
+   * Resource management.
+   *
+   *@{
+   */
+
+  /** Allocate and initialize a new logging context.
+   *
+   * @param parent @c NULL, or a context to assign as the parent for the context
+   * being created.  Unless the created context is explicitly activated or
+   * deactivated with spt_context_enable or spt_context_disable, it will inherit
+   * the parent's activation state.
    *
    * @param name Symbolic name for the context.
    *
-   * @param description Description of what the logging context is
-   * used for.  Currently unused (may be @c NULL).
+   * @param description Description of what the logging context is used for.
+   * Currently unused (may be @c NULL).
    *
    * @return A pointer to the new context, or @c NULL if an error was
    * encountered.
@@ -164,14 +232,17 @@ extern "C"
    *
    * @param cxt The context in which to log.
    *
-   * @param ... Additional arguments are passed to mlog.
+   * @param ... Additional arguments are eventually passed to mlog.
    *
    * @see cmlog_real
    * @see mlog
    */
-#define cmlog(cxt, ...) if ( spt_context_active(cxt) ) cmlog_real(cxt, __VA_ARGS__)
+#define cmlog(cxt, ...) if ( spt_context_active(cxt) ) cxt->handler->log(cxt, __VA_ARGS__)
 
-  /** Context-enabled version of spt.
+  /** Alias for cmlog */
+#define spt_logv cmlog
+
+  /** Context-enabled version of mlog.
    *
    * @warning Do not call this function directly; use the cmlog macro instead.
    *
@@ -182,10 +253,10 @@ extern "C"
   int
   cmlog_real(const spt_context_t* context, const unsigned long spec, const char* fmt, ...);
 
+/**@}*/
+
 #ifdef __cplusplus
 }
 #endif
-
-/**@}*/
 
 #endif	/* SPT_CONTEXT_H */

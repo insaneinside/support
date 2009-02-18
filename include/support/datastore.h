@@ -9,17 +9,21 @@
 #include <support/dllist.h>
 #include <support/meta.h>
 
-/** \defgroup datastore Table-model data storage
+/** @defgroup datastore Table-model data storage
+ *@{
  */
-/*@{*/
 
-/** \name Data Types */
-/*@{*/
-typedef struct datastore_t;
-/*@}*/
-/** \name Object management
+/** @name Data Types
+ *@{
  */
-/*@{*/
+
+typedef struct datastore_t;
+/**@}*/
+
+
+/** @name Object management
+ *@{
+ */
 
 /** Create a new data store.
  */
@@ -30,10 +34,11 @@ datastore_create();
  */
 void
 datastore_destroy(datastore_t* datastore);
-/*@}*/
+/**@}*/
 
-/** \name Field definitions */
-/*@{ */
+/** @name Field definitions
+ *@{
+ */
 /** Fetch the datastore's list of field type definitions.
  *
  * \param	datastore	Target datastore.
@@ -42,10 +47,11 @@ datastore_destroy(datastore_t* datastore);
  */
 dllist_t*
 datastore_get_fields(const datastore_t* datastore);
-/*@}*/
+/**@}*/
 
-/** \name Data records */
-/*@{*/
+/** @name Data records
+ *@{
+ */
 typedef struct datastore_record_t;
 
 const meta_t*
@@ -57,8 +63,7 @@ datastore_record_field_by_index(const datastore_record_t* record,
 				const unsigned fieldIndex);
 
 
-/*@}*/
-
-
-/*@}*/
+/**@}
+ *@}
+ */
 #endif SUPPORT_DATASTORE_H
