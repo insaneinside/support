@@ -9,6 +9,9 @@
 #include <support/spt-context.h>
 #include <support/macro.h>
 
+#define SPT_LOCK_EXCLUSIVE(target)
+#define SPT_UNLOCK_EXCLUSIVE(target)
+
 #define CONTEXT_NAME_SEPARATOR "."
 #define CONTEXT_NAME_SEPARATOR_LENGTH 1
 #define CMLOG_FORMAT "[%s] %s"
@@ -45,12 +48,43 @@ struct parse_spec
 
 #define LEVEL(cmlog_flags)	(cmlog_flags & MLOG_LOGLEVEL_MASK )
 
+#ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
+#define CONTEXT_ALLOC_SIZES(parent,name,description)			\
+  size_t name_alloc_size = strlen(name) + 1;				\
+  size_t fullname_alloc_size = ( parent && ! ( parent->flags & SPT_CONTEXT_HIDE_NAME ) ) \
+    ? ( strlen(parent->full_name) + CONTEXT_NAME_SEPARATOR_LENGTH + name_alloc_size ) \
+    : 0; /* will be using name pointer */				\
+  size_t description_alloc_size = description ? strlen(description) + 1 : 0; \
+  size_t alloc_size							\
+  = sizeof(spt_context_t)						\
+    + name_alloc_size							\
+    + fullname_alloc_size						\
+    + description_alloc_size;
+#else
+#define CONTEXT_ALLOC_SIZES(parent,name)				\
+  size_t name_alloc_size = strlen(name) + 1;				\
+  size_t fullname_alloc_size = ( parent && ! ( parent->flags & SPT_CONTEXT_HIDE_NAME ) ) \
+    ? ( strlen(parent->full_name) + CONTEXT_NAME_SEPARATOR_LENGTH + name_alloc_size ) \
+    : 0; /* will be using name pointer */				\
+  size_t alloc_size							\
+  = sizeof(spt_context_t)						\
+    + name_alloc_size							\
+    + fullname_alloc_size
+#endif
+
 /** Build the full name that should be assigned to a context.
  */
 static char*
-context_build_full_name(const spt_context_t* context)
+context_build_full_name(const spt_context_t* context, size_t alloc_size)
 {
-  size_t left = -1;
+  if ( alloc_size <= 0 )
+    {
+      if ( context->flags & SPT_CONTEXT_HIDE_NAME )
+	return NULL;
+      else
+	return context->name;
+    }
+  size_t left = alloc_size;
   char* out = NULL;
   char* to = NULL;
   char* lastto = NULL;
@@ -61,18 +95,7 @@ context_build_full_name(const spt_context_t* context)
   if ( context->parent == NULL || context->parent->flags & SPT_CONTEXT_HIDE_NAME )
     return context->name;
 
-  /* Calculate full_name buffer size. */
-  left =
-    strlen(context->parent->full_name)
-    + CONTEXT_NAME_SEPARATOR_LENGTH
-    + strlen(context->name) + 1;
-
-  out = (char*) malloc(sizeof(char) * left);
-  if ( !out )
-    {
-      perror("malloc");
-      return NULL;
-    }
+  out = context->full_name;
   to = out;
   lastto = out;
 
@@ -89,7 +112,7 @@ context_build_full_name(const spt_context_t* context)
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
   if ( left != 1 )
     {
-      fprintf(stderr, "ERROR: In %s: output buffer has incorrect size (%u left).", __func__, (unsigned int) left);
+      fprintf(stderr, "ERROR: In %s: output buffer has incorrect size (%u left) while building name for context #%lu\n", __func__, (unsigned int) left, context->id);
       abort();
     }
 #endif
@@ -107,15 +130,6 @@ context_destroy_single(spt_context_t* context)
     {
       context->magic = 0;
 
-      /* full_name may just be a copy of name pointer */
-      if ( context->full_name && context->full_name != context->name )
-	free(context->full_name);
-      if ( context->name )
-	free(context->name);
-#ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
-      if ( context->description )
-	free(context->description);
-#endif
       free(context);
     }
 
@@ -137,7 +151,8 @@ context_destroy_single(spt_context_t* context)
 /** Call spt_context_destroy_recursive on a node's data.
  */
 static int
-_fe_destroy_context_recursive(dllist_t* node, const void* udata)
+_fe_destroy_context_recursive(dllist_t* node,
+			      const void* udata __attribute__ (( unused )) )
 {
   if ( node )
     {
@@ -154,7 +169,8 @@ _fe_destroy_context_recursive(dllist_t* node, const void* udata)
 /** Set the context's parent to NULL.
  */
 static int
-_fe_unparent_context(dllist_t* node, const void* udata)
+_fe_unparent_context(dllist_t* node,
+		     const void* udata __attribute__ (( unused )) )
 {
   if ( node )/* && node->data ) */
     {
@@ -205,6 +221,11 @@ _fe_apply_pspecs(dllist_t* node, const void* udata)
     return 1;
 }
 
+#define assign_and_advance(dest,type,size,source,size_counter)	\
+  dest = (type *) source;					\
+  source += (ptrdiff_t) size;				\
+  size_counter -= size
+
 #ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
   spt_context_t*
   spt_context_create(spt_context_t* parent,
@@ -216,52 +237,72 @@ _fe_apply_pspecs(dllist_t* node, const void* udata)
 		     const char* name)
 #endif
 {
-  spt_context_t* o = NULL;
+  unsigned char* buf = NULL;
+  spt_context_t* cxt = NULL;
+
+  /* Declare allocation size variables */
+#ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
+  CONTEXT_ALLOC_SIZES(parent, name, description);
+#else
+  CONTEXT_ALLOC_SIZES(parent, name);
+#endif
+  size_t orig_alloc_size = alloc_size;
 
   if ( ! name /*|| ! description*/ )
     return NULL;
 
-  if ( ! ( o = (spt_context_t*) malloc(sizeof(spt_context_t)) ) )
+  /* Allocate the memory */
+  if ( ! ( buf = (unsigned char*) malloc(alloc_size) ) )
     {
       perror("malloc");
       return NULL;
     }
+  memset(buf, 0, alloc_size);
 
-  memset(o, 0, sizeof(spt_context_t));
-
-  o->id = context_id_base++;
-#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
-  o->magic = SPT_CONTEXT_MAGIC;
+  /* Assign pointers */
+  assign_and_advance(cxt, spt_context_t, sizeof(spt_context_t),
+		     buf, alloc_size);
+  assign_and_advance(cxt->name, char, name_alloc_size,
+		     buf, alloc_size);
+  assign_and_advance(cxt->full_name, char, fullname_alloc_size,
+		     buf, alloc_size);
+#ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
+  assert(alloc_size == description_alloc_size);
+  assign_and_advance(cxt->description, char, description_alloc_size,
+		     buf, alloc_size);
 #endif
-  o->name = strdup(name);
+  assert(buf == (unsigned char*) cxt + orig_alloc_size );
+  assert(alloc_size == 0);
+
+  /* Set object vars and copy strings */
+  SPT_LOCK_EXCLUSIVE(context_id_base);
+  cxt->id = context_id_base++;
+  SPT_UNLOCK_EXCLUSIVE(context_id_base);
+
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+  cxt->magic = SPT_CONTEXT_MAGIC;
+#endif
+
+  strncpy(cxt->name, name, name_alloc_size);
+
 #ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
   if ( description )
-    o->description = strdup(description);
+    strncpy(cxt->description, description, description_alloc_size);
 #endif
 
   if ( parent )
     {
-      o->parent = parent;
-      parent->children = dllist_append(parent->children, o);
-      spt_context_reset(o);
+      cxt->parent = parent;
+      parent->children = dllist_append(parent->children, cxt);
+      spt_context_reset(cxt);
     }
 
-  o->full_name = context_build_full_name(o);
-
-  if ( !o->full_name )
-    {
-      free(o->name);
-#ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
-      free(o->description);
-#endif
-      free(o);
-      return NULL;
-    }
+  cxt->full_name = context_build_full_name(cxt, fullname_alloc_size);
 
   if ( parse_spec_list )
-    dllist_foreach(parse_spec_list, &_fe_apply_pspecs, o);
+    dllist_foreach(parse_spec_list, &_fe_apply_pspecs, cxt);
 
-  return o;
+  return cxt;
 }
 
 void
@@ -320,7 +361,8 @@ static void context_inherit_state(spt_context_t* context);
  *  each list element.
  */
 static int
-_fe_inherit_state(dllist_t* node, const void* udata)
+_fe_inherit_state(dllist_t* node,
+		  const void* udata __attribute__ (( unused )) )
 {
   spt_context_t* context = NULL;
   if ( node && node->data )
@@ -509,7 +551,7 @@ cmlog_real(const spt_context_t* context, const unsigned long spec, const char* f
   va_list ap;
   mlog_loglevel_t lvl = LEVEL(spec);
   char* cfmt = NULL;
-  size_t ncfmt = -1;
+  ssize_t ncfmt = -1;
   int r = -1;
   static char* last_full_name = NULL;
 
