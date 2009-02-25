@@ -1,8 +1,9 @@
-/* -*- Mode: C; fill-column: 80 */
+/* -*- Mode: C; fill-column: 70 -*- */
 #ifndef SPT_CONTEXT_H
 #define SPT_CONTEXT_H	1
 
 #include <support/support-config.h>
+#include <support/mlog.h>
 
 /** @defgroup context Contexts
  *
@@ -32,6 +33,8 @@ extern "C"
   /** Opaque interface to the output handler objects for spt_context.
    */
   typedef struct __spt_context_handler spt_context_handler_t;
+
+  typedef mlog_loglevel_t spt_loglevel_t;
   /**@}*/
 
 #ifdef __cplusplus
@@ -39,7 +42,6 @@ extern "C"
 #endif
 
 #include <support/private/spt-context.h>
-#include <support/mlog.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -57,8 +59,8 @@ extern "C"
    */
   /** Data-output function prototype.
    *
-   * <strong>Requirements:</strong> Any implementations of this
-   * function should
+   * @requirements
+   * Any implementations of this should
    *   - Be completely thread-safe.
    *   - Format or interpret the data only to the extent needed for
    *     output.
@@ -86,22 +88,29 @@ extern "C"
 					  const ssize_t length);
 
 
-  /** Message format function
+  /** Log message format function prototype.
+   *
+   * @requirements
+   * Any implementations of this should
+   *   - Be completely thread-safe
+   *
    */
   typedef int (*spt_context_format_func_t)(const spt_context_t* context,
 					   const spt_loglevel_t level,
-					   const char* message);
+					   const char* message,
+					   void* output_dest);
   /**@}*/
 
 
-  typedef struct __spt_context_handler
+  struct __spt_context_handler
   {
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
     uint32_t magic;
 #endif
+
     spt_context_write_func_t write;
     spt_context_format_func_t format;
-  } spt_context_handler_t;
+  };
   /**@}*/
 
 
@@ -111,6 +120,7 @@ extern "C"
    *
    *@{
    */
+
 
   /** Allocate and initialize a new logging context.
    *
@@ -237,7 +247,7 @@ extern "C"
    * @see cmlog_real
    * @see mlog
    */
-#define cmlog(cxt, ...) if ( spt_context_active(cxt) ) cxt->handler->log(cxt, __VA_ARGS__)
+#define cmlog(cxt, ...) if ( spt_context_active(cxt) ) cmlog_real(cxt, __VA_ARGS__)
 
   /** Alias for cmlog */
 #define spt_logv cmlog

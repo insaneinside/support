@@ -58,7 +58,7 @@ struct __spt_context
 
   /** Output handler for this context.
    */
-  spt_context_handler_t output_handler;
+  spt_context_handler_t* output_handler;
 
   /** State flags.
    * @see spt_context_flags

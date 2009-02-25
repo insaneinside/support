@@ -77,6 +77,8 @@ install(DIRECTORY
 
 set(SPT_WARN_FLAGS
   -Wall
+  -Wconversion
+  -Wextra
   -Wfloat-equal
   -Wno-long-long
   -Wno-variadic-macros
