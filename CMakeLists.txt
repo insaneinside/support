@@ -63,10 +63,12 @@ set(CONFIG_HEADER_DEST
   "${Support_BINARY_DIR}/include/support/support-config.h")
 mark_as_advanced(FORCE CONFIG_HEADER_SOURCE CONFIG_HEADER_DEST)
 configure_file(${CONFIG_HEADER_SOURCE} ${CONFIG_HEADER_DEST})
-include_directories(
-  "${Support_SOURCE_DIR}/include"
-  "${Support_BINARY_DIR}/include")
 
+set(SUPPORT_INCLUDE_DIRS
+  "${Support_SOURCE_DIR}/include" "${Support_BINARY_DIR}/include"
+  CACHE STRING "libsupport include directories"
+  )
+include_directories(${SUPPORT_INCLUDE_DIRS})
 
 install(DIRECTORY
   "${Support_SOURCE_DIR}/include/support"

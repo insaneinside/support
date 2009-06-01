@@ -21,13 +21,13 @@ extern "C"
   long int st = -1
 
 #define update_time_value()						\
-  if ( ntp_gettime(&te) && errno != TIME_ERROR ) { perror("ntp_gettime"); abort(); } \
+  errno = 0; if ( ntp_gettime(&te) && errno > 0 ) { perror("ntp_gettime"); abort(); } \
   else
 
 #define update_last_time_value() st = time_value
 
 #define mark_label(s)							\
-  if ( ntp_gettime(&te) ) { perror("ntp_gettime"); abort(); }		\
+  errno = 0; if ( ntp_gettime(&te) && errno > 0 ) { perror("ntp_gettime"); abort(); } \
   if ( st != -1 )							\
     fprintf(stderr, "-- MARK%s%s ("time_value_format" elapsed)\n",	\
 	    s ? ": " : "",						\
