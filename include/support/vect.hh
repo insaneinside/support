@@ -28,6 +28,8 @@ namespace spt
   class Vector
   {
   public:
+    typedef unsigned int size_type;
+
     Vector()
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(0), _M_recalc_mag(false)
@@ -85,8 +87,8 @@ namespace spt
 
 
 
-    void
-    set(unsigned int vn, scalar_t val)
+    inline void
+    set(const size_type vn, const scalar_t val)
     {
       if ( vn < 3 )
 	_M_val[vn] = val;
@@ -98,8 +100,8 @@ namespace spt
     }
 
 
-    void
-    set(scalar_t v0, scalar_t v1, scalar_t v2)
+    inline void
+    set(const scalar_t v0, const scalar_t v1, const scalar_t v2)
     {
       SV_SET(_M_val, v0, v1, v2);
 #ifdef SPT_VECT_CACHE_MAGNITUDE
@@ -107,8 +109,8 @@ namespace spt
 #endif
     }
 
-    void
-    set(scalar_t nv[3])
+    inline void
+    set(const scalar_t nv[3])
     {
       SV_SET(_M_val, nv[0], nv[1], nv[2]);
 #ifdef SPT_VECT_CACHE_MAGNITUDE
@@ -116,13 +118,13 @@ namespace spt
 #endif
     }
 
-    void
+    inline void
     set(const Vector& r)
     {
       *this = r;
     }
 
-    void
+    inline void
     clear()
     {
       SV_SET(_M_val, 0, 0, 0);
@@ -133,7 +135,7 @@ namespace spt
 #endif
     }
 
-    scalar_t
+    inline scalar_t
     mag()
     {
 #ifdef SPT_VECT_CACHE_MAGNITUDE
@@ -149,7 +151,7 @@ namespace spt
 #endif
     }
 
-    scalar_t
+    inline scalar_t
     mag() const
     {
 #ifdef SPT_VECT_CACHE_MAGNITUDE
@@ -161,7 +163,7 @@ namespace spt
     }
 
 
-    scalar_t
+    inline scalar_t
     compute_mag() const
     {
       return S_SQRT( SQ(_M_val[0]) +
@@ -170,7 +172,7 @@ namespace spt
     }
 
 
-    void
+    inline void
     normalize()
     {
       scalar_t m(this->mag());
@@ -192,7 +194,7 @@ namespace spt
       return;
     }
 
-    Vector
+    inline Vector
     unit()
     {
       scalar_t m(mag());
@@ -218,7 +220,7 @@ namespace spt
     }
 
 
-    Vector
+    inline Vector
     unit() const
     {
       scalar_t m = mag();
@@ -245,7 +247,7 @@ namespace spt
     }
   
 
-    const char*
+    inline const char*
     to_s() const
     {
       static char buf[64];		// stupid, I know.  feel free to fix it. :P
@@ -257,7 +259,7 @@ namespace spt
       return buf;
     }
 
-    scalar_t&
+    inline scalar_t&
     operator[](unsigned int vn)
     { 
       if ( vn < 3 )
@@ -267,7 +269,7 @@ namespace spt
     }
 
 
-    scalar_t&
+    inline scalar_t&
     operator[](unsigned int vn) const
     {
       if ( vn < 3 )
@@ -276,7 +278,7 @@ namespace spt
 	throw std::out_of_range(MSG_OORANGE);
     }
 
-    bool
+    inline bool
     operator==(const Vector& r) const
     {
 #ifdef SPT_VECT_CACHE_MAGNITUDE
@@ -294,7 +296,7 @@ namespace spt
     }
 
 
-    bool
+    inline bool
     operator!=(const Vector& r) const
     {
       return !operator==(r);
@@ -303,7 +305,7 @@ namespace spt
 
 
 
-    Vector
+    inline Vector
     operator+(const Vector& r) const
     {
       return Vector( _M_val[0] + r._M_val[0],
@@ -312,7 +314,7 @@ namespace spt
     }
 
 
-    Vector
+    inline Vector
     operator-(const Vector& r) const
     {
       return Vector( _M_val[0] - r._M_val[0],
@@ -322,8 +324,8 @@ namespace spt
 
 
     // scalar constant product
-    Vector
-    operator*(scalar_t r) const
+    inline Vector
+    operator*(const scalar_t r) const
     {
       return Vector( r * _M_val[0],
 		     r * _M_val[1],
@@ -331,7 +333,7 @@ namespace spt
     }
 
     // cross (vector) product
-    Vector
+    inline Vector
     operator*(const Vector& r) const
     {
 #ifdef USE_DEBUG
@@ -345,7 +347,7 @@ namespace spt
     }
 
     // dot (scalar) product
-    scalar_t
+    inline scalar_t
     dot(const Vector& r) const
     {
       return ( (_M_val[0] * r._M_val[0]) +
@@ -354,8 +356,8 @@ namespace spt
     }
 
 
-    Vector
-    operator/(scalar_t r) const
+    inline Vector
+    operator/(const scalar_t r) const
     {
       return Vector( _M_val[0] / r,
 		     _M_val[1] / r,
@@ -377,7 +379,7 @@ namespace spt
       
 
     // Assignment
-    Vector&
+    inline Vector&
     operator+=(const Vector& r)
     {
       _M_val[0] += r._M_val[0];
@@ -390,7 +392,7 @@ namespace spt
       return *this;
     }
 
-    Vector&
+    inline Vector&
     operator-=(const Vector& r)
     {
       _M_val[0] -= r._M_val[0];
@@ -404,7 +406,7 @@ namespace spt
       return *this;
     }
 
-    Vector
+    inline Vector
     operator-()
     {
       return Vector(-_M_val[0],
@@ -413,7 +415,7 @@ namespace spt
     }
 
     // Cross product.
-    Vector&
+    inline Vector&
     operator*=(const Vector& r)
     {
       scalar_t ov[3];
@@ -432,8 +434,8 @@ namespace spt
       return *this;
     }
 
-    Vector&
-    operator*=(scalar_t r)
+    inline Vector&
+    operator*=(const scalar_t r)
     {
       _M_val[0] *= r;
       _M_val[1] *= r;
@@ -446,8 +448,8 @@ namespace spt
       return *this;
     }
 
-    Vector&
-    operator/=(scalar_t r)
+    inline Vector&
+    operator/=(const scalar_t r)
     {
       _M_val[0] /= r;
       _M_val[1] /= r;
@@ -470,9 +472,7 @@ namespace spt
       return false;
     }
 
-
-
-    const scalar_t*
+    inline const scalar_t*
     val() const
     {
       return const_cast<scalar_t*>(_M_val);
@@ -488,7 +488,7 @@ namespace spt
   };
 
   inline Vector
-  operator*(scalar_t s, const Vector& v)
+  operator*(const scalar_t s, const Vector& v)
   {
     return v * s;
   }
@@ -503,6 +503,8 @@ namespace spt
   class Vec
   {
   public:
+    typedef unsigned int size_type;
+
     Vec()
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(0), _M_recalc_mag(false)
@@ -729,8 +731,8 @@ namespace spt
       return buf;
     }
 
-    scalar_t&
-    operator[](unsigned int vn)
+    inline scalar_t&
+    operator[](const size_type vn)
     { 
       if ( vn < _N )
 	return _M_val[vn];
@@ -739,8 +741,8 @@ namespace spt
     }
 
 
-    scalar_t&
-    operator[](unsigned int vn) const
+    inline const scalar_t&
+    operator[](const size_type vn) const
     {
       if ( vn < _N )
 	return const_cast<scalar_t&>(_M_val[vn]);
@@ -748,7 +750,7 @@ namespace spt
 	throw std::out_of_range(MSG_OORANGE);
     }
 
-    bool
+    inline bool
     operator==(const Vec<_N>& r) const
     {
       unsigned int i;
@@ -760,7 +762,7 @@ namespace spt
     }
 
 
-    bool
+    inline bool
     operator!=(const Vec<_N>& r) const
     {
       return !operator==(r);
@@ -769,7 +771,7 @@ namespace spt
 
 
 
-    Vec<_N>
+    inline Vec<_N>
     operator+(const Vec<_N>& r) const
     {
       return Vec<_N>( _M_val[0] + r._M_val[0],
@@ -778,7 +780,7 @@ namespace spt
     }
 
 
-    Vec<_N>
+    inline Vec<_N>
     operator-(const Vec<_N>& r) const
     {
       return Vec<_N>( _M_val[0] - r._M_val[0],
@@ -788,7 +790,7 @@ namespace spt
 
 
     // scalar constant product
-    Vec<_N>
+    inline Vec<_N>
     operator*(scalar_t r) const
     {
       return Vec<_N>( r * _M_val[0],
@@ -797,7 +799,7 @@ namespace spt
     }
 
     // cross (vector) product
-    Vec<_N>
+    inline Vec<_N>
     operator*(const Vec<_N>& r) const
     {
 #ifdef USE_DEBUG
@@ -811,7 +813,7 @@ namespace spt
     }
 
     // dot (scalar) product
-    scalar_t
+    inline scalar_t
     dot(const Vec<_N>& r) const
     {
       unsigned int i;
@@ -824,7 +826,7 @@ namespace spt
     }
 
 
-    Vec<_N>
+    inline Vec<_N>
     operator/(scalar_t r) const
     {
 
@@ -851,7 +853,7 @@ namespace spt
       
 
     // Assignment
-    Vec<_N>&
+    inline Vec<_N>&
     operator+=(const Vec<_N>& r)
     {
       unsigned int i;
@@ -879,7 +881,7 @@ namespace spt
       return *this;
     }
 
-    Vec<_N>
+    inline Vec<_N>
     operator-()
     {
       unsigned int i;
@@ -911,7 +913,7 @@ namespace spt
  *       return *this;
  *     } */
 
-    Vec<_N>&
+    inline Vec<_N>&
     operator*=(scalar_t r)
     {
       unsigned int i;
@@ -925,7 +927,7 @@ namespace spt
       return *this;
     }
 
-    Vec<_N>&
+    inline Vec<_N>&
     operator/=(scalar_t r)
     {
       unsigned int i;
@@ -939,7 +941,7 @@ namespace spt
       return *this;
     }
 
-    const scalar_t*
+    inline const scalar_t*
     val() const
     {
       return const_cast<scalar_t*>(_M_val);
