@@ -75,6 +75,10 @@ extern "C"
   dllist_t* dllist_append(dllist_t* list, void* data);
 
 
+  /** Append a node to the end of the list.
+   */
+  dllist_t* dllist_append_node(dllist_t* list, dllist_t* node);
+
   /** prepend data to the start of list.
    */
   dllist_t* dllist_prepend(dllist_t* list, void* data);
@@ -159,6 +163,13 @@ extern "C"
 
   dllist_t* dllist_sort(dllist_t* list, dllist_cmpfunc sortfunc);
 
+  /** Create a copy of an entire list (and data pointers, of course).
+   */
+  dllist_t* dllist_copy(dllist_t* src);
+  
+  /** Create a copy of a single list node.
+   */
+  dllist_t* dllist_node_copy(dllist_t* node);
 
 #ifdef __cplusplus
 }

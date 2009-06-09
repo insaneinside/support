@@ -18,7 +18,7 @@ dllist_free_node(dllist_t* node)
 }
 
 static int
-_fe_list_free(dllist_t* node, const void* userdata)
+_fe_list_free(dllist_t* node, const void* userdata __attribute__(( unused )))
 {
   dllist_free_node(node);
   return 1;
@@ -430,4 +430,41 @@ dllist_sort(dllist_t* list, dllist_cmpfunc cmp)
   dllist_foreach(list, _fe_insert_sorted, &sd);
 
   return out;
+}
+
+
+dllist_t*
+dllist_copy(dllist_t* src)
+{
+  dllist_t* out = NULL;
+
+  for ( dllist_t* node = src; node != NULL; node = node->next )
+    {
+      out = dllist_append(out, node->data);
+    }
+
+  return out;
+}
+
+dllist_t*
+dllist_node_copy(dllist_t* src)
+{
+  dllist_t* out = dllist_alloc();
+  out->data = src->data;
+  out->next = src->next;
+  out->prev = src->prev;
+
+  return out;
+}
+
+dllist_t*
+dllist_append_node(dllist_t* list, dllist_t* node)
+{
+  if ( list )
+    {
+      dllist_insert_after(node, dllist_last(list));
+      return list;
+    }
+  else
+    return node;
 }
