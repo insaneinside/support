@@ -4,18 +4,18 @@ set(SUPPORT_LIBRARY "support"
   CACHE STRING "Name of the default library target for linking")
 
 # Configure library names
-if(SPT_BUILD_SHARED AND NOT SPT_BUILD_STATIC OR SPT_BUILD_STATIC AND NOT SPT_BUILD_SHARED)
-  # Building only one library.
-  mark_as_advanced(SUPPORT_LIBRARY FORCE)
-elseif(SPT_BUILD_SHARED AND SPT_BUILD_STATIC)
+if(SPT_BUILD_SHARED AND SPT_BUILD_STATIC)
   # Building both.  Use suffixes.
   set(SPT_STATIC_TARGET_SUFFIX "-static")
   set(SPT_SHARED_TARGET_SUFFIX "-shared")
   set(SUPPORT_LIBRARY "support-static") # default to the static library
-else(SPT_BUILD_STATIC AND NOT SPT_BUILD_SHARED)
+elseif(NOT SPT_BUILD_STATIC AND NOT SPT_BUILD_SHARED)
   # Building nothing?  Yell at the user.
   message(FATAL_ERROR "Neither SPT_BUILD_SHARED nor SPT_BUILD_STATIC is set!")
-endif(SPT_BUILD_SHARED AND NOT SPT_BUILD_STATIC OR SPT_BUILD_STATIC AND NOT SPT_BUILD_SHARED)
+else(SPT_BUILD_SHARED AND SPT_BUILD_STATIC)
+  # Building only one library.
+  mark_as_advanced(SUPPORT_LIBRARY FORCE)
+endif(SPT_BUILD_SHARED AND SPT_BUILD_STATIC)
 
 set(support_SOURCES
   ref.cc
@@ -27,9 +27,9 @@ set(support_SOURCES
   matrix.c
   )
 
-if(SPT_ENABLE_MLOG_CONTEXT)
-  list(APPEND support_SOURCES spt-context.c)
-endif(SPT_ENABLE_MLOG_CONTEXT)
+if(SPT_ENABLE_LOG_CONTEXT)
+  list(APPEND support_SOURCES spt-context.c spt-context-parse-spec.c)
+endif(SPT_ENABLE_LOG_CONTEXT)
 
 # Static library
 if(SPT_BUILD_STATIC)

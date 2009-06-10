@@ -29,10 +29,10 @@ _fe_find_pair(dllist_t* node, const void* hashptr)
 }
 
 static int
-_fe_free_pair(dllist_t* node, const void* nil)
+_fe_free_pair(dllist_t* node, const void* udata __attribute__(( unused )) )
 {
   free(node->data);
-  return 0;
+  return 1;
 }
 
 hash_table_t*
