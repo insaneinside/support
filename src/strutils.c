@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <support/strutils.h>
 
 char*
@@ -77,9 +78,9 @@ char*
 strchug(const char* s)
 {
   char* o = strdup(s);
-  int i;
+  ssize_t i;
 
-  for ( i = strlen(s) - 1; i >= 0 && isspace(o[i]); i-- )
+  for ( i = (ssize_t) strlen(s) - 1; i >= 0 && isspace(o[i]); i-- )
     o[i] = '\0';
 
   return o;
