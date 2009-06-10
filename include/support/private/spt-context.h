@@ -20,11 +20,13 @@ enum spt_context_flags
      */
     SPT_CONTEXT_POLICY	= 1 << 0,
 
-    /** Indicates the state of the explicit policy.  If set, the explicit
+    /** Indicates the state of the explicit policy.  If set, the
+     * context is active under this policy.
      */
     SPT_CONTEXT_EXPLICIT_STATE	= 1 << 1,
 
-    /** Indicates the (in)active state of the implicit policy.
+    /** Indicates the (in)active state of the implicit policy.  If
+     * set, the context is active under this policy.
      */
     SPT_CONTEXT_IMPLICIT_STATE	= 1 << 2,
 
@@ -73,6 +75,36 @@ struct __spt_context
   struct __spt_context* parent;
 };
 
+  /** @internal */
+struct __spt_context_parse_spec
+{
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+  /** Magic number */
+  uint32_t magic;
+#endif
+  /** Value of flags (below) will override value of flags in matching
+   * contexts for bits set in this mask.
+   */
+  unsigned long int mask;
+
+  /** IOR flags field of any matching context with this value.
+   */
+  unsigned long int flags;
+
+  /** Copy of the single_spec input string.
+   */
+  char* input;
+
+  /** Number of elements in name_array.
+   */
+  size_t name_array_length;
+
+  /** Context name hierarchy.  This parse spec matches any context
+   *  whose full name ends with the elements in name_array.
+   */
+  char** name_array;
+};
+
 /** Determine the state -- active or inactive -- of a context.
  *
  * @param cxt A pointer to the context
@@ -88,12 +120,19 @@ struct __spt_context
     ? flags & SPT_CONTEXT_EXPLICIT_STATE	\
     : flags & SPT_CONTEXT_IMPLICIT_STATE )
 
+#define SPT_CONTEXT_NAME_SEPARATOR "."
+#define SPT_CONTEXT_NAME_SEPARATOR_LENGTH 1
+
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
 #define SPT_CONTEXT_MAGIC  ( ( 'M' << 3 ) + ( 'C' << 2 ) + ( 'X' << 1 ) + 'T' )
+#define SPT_CONTEXT_PARSE_SPEC_MAGIC ( ( 'S' << 3 ) + ( 'P' << 2 ) + ( 'E' << 1 ) + 'C' )
 #define SPT_IS_CONTEXT(cxt) \
   ( cxt && ((spt_context_t*) cxt)->magic == SPT_CONTEXT_MAGIC )
+#define SPT_IS_CONTEXT_PARSE_SPEC(pspec) \
+  ( pspec && ((spt_context_parse_spec_t*) pspec)->magic == SPT_CONTEXT_PARSE_SPEC_MAGIC )
 #else
 #define SPT_IS_CONTEXT(cxt) (cxt)
+#define SPT_IS_CONTEXT_PARSE_SPEC(pspec) (pspec)
 #endif
 
 #ifdef __cplusplus

@@ -12,39 +12,13 @@
 #define SPT_LOCK_EXCLUSIVE(target)
 #define SPT_UNLOCK_EXCLUSIVE(target)
 
-#define CONTEXT_NAME_SEPARATOR "."
-#define CONTEXT_NAME_SEPARATOR_LENGTH 1
 #define CMLOG_FORMAT "[%s] %s"
 #define CMLOG_FORMAT_NONAME "%s"
 static unsigned long int context_id_base = 0;
-static dllist_t* parse_spec_list = NULL;
 
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
 #include <assert.h>
-#define PARSE_SPEC_MAGIC ( ( 'S' << 3 ) + ( 'P' << 2 ) + ( 'E' << 1 ) + 'C' )
 #endif
-
-struct parse_spec
-{
-#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
-  uint32_t magic;
-#endif
-  /** Value of flags (below) will override value of flags in matching
-   * contexts for bits set in this mask.
-   */
-  unsigned long int mask;
-
-  /** IOR flags field of any matching context with this value.
-   */
-  unsigned long int flags;
-
-  /** Copy of the single_spec input string.
-   */
-  char* input;
-
-  size_t name_array_length;
-  char** name_array;
-};
 
 #define LEVEL(cmlog_flags)	(cmlog_flags & MLOG_LOGLEVEL_MASK )
 
@@ -52,7 +26,7 @@ struct parse_spec
 #define CONTEXT_ALLOC_SIZES(parent,name,description)			\
   size_t name_alloc_size = strlen(name) + 1;				\
   size_t fullname_alloc_size = ( parent && ! ( parent->flags & SPT_CONTEXT_HIDE_NAME ) ) \
-    ? ( strlen(parent->full_name) + CONTEXT_NAME_SEPARATOR_LENGTH + name_alloc_size ) \
+    ? ( strlen(parent->full_name) + SPT_CONTEXT_NAME_SEPARATOR_LENGTH + name_alloc_size ) \
     : 0; /* will be using name pointer */				\
   size_t description_alloc_size = description ? strlen(description) + 1 : 0; \
   size_t alloc_size							\
@@ -64,7 +38,7 @@ struct parse_spec
 #define CONTEXT_ALLOC_SIZES(parent,name)				\
   size_t name_alloc_size = strlen(name) + 1;				\
   size_t fullname_alloc_size = ( parent && ! ( parent->flags & SPT_CONTEXT_HIDE_NAME ) ) \
-    ? ( strlen(parent->full_name) + CONTEXT_NAME_SEPARATOR_LENGTH + name_alloc_size ) \
+    ? ( strlen(parent->full_name) + SPT_CONTEXT_NAME_SEPARATOR_LENGTH + name_alloc_size ) \
     : 0; /* will be using name pointer */				\
   size_t alloc_size							\
   = sizeof(spt_context_t)						\
@@ -100,13 +74,13 @@ context_build_full_name(const spt_context_t* context, size_t alloc_size)
   lastto = out;
 
   to = stpncpy(to, context->parent->full_name, left);
-  left -= to - lastto;
+  left -= (size_t) (to - lastto);
   lastto = to;
-  to = stpncpy(to, CONTEXT_NAME_SEPARATOR, left);
-  left -= to - lastto;
+  to = stpncpy(to, SPT_CONTEXT_NAME_SEPARATOR, left);
+  left -= (size_t) (to - lastto);
   lastto = to;
   to = stpncpy(to, context->name, left);
-  left -= to - lastto;
+  left -= (size_t) (to - lastto);
 
   /* `to' should point to the nul byte at the end of the string. */
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
@@ -178,47 +152,6 @@ _fe_unparent_context(dllist_t* node,
       context->parent = NULL;
     }
   return 1;
-}
-
-static int
-_apply_pspec(const struct parse_spec* ps, spt_context_t* cxt)
-{
-#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
-  assert(cxt->magic == SPT_CONTEXT_MAGIC);
-  assert(ps->magic == PARSE_SPEC_MAGIC);
-#endif
-  /* printf("%p: ", cxt);
-   * _print_pspec(ps); */
-  int i;
-  const spt_context_t* cc = cxt;
-  for ( i = ps->name_array_length - 1; i > -1 && cc != NULL; --i )
-    {
-      if ( strcmp(cc->name, ps->name_array[i]) )
-	return 0;
-      cc = cc->parent;
-    }
-  cxt->flags = (cxt->flags & ~(ps->mask)) | (ps->flags & ps->mask);
-  /* if ( ps->flags & SPT_CONTEXT_EXPLICIT_STATE )
-   *   spt_context_enable(cxt);
-   * else
-   *   spt_context_disable(cxt); */
-
-  return 1;
-}
-
-static int
-_fe_apply_pspecs(dllist_t* node, const void* udata)
-{
-  struct parse_spec* ps = (struct parse_spec*) node->data;
-  spt_context_t* cxt = (spt_context_t*) udata;
-  if ( _apply_pspec(ps, cxt) )
-    {
-      free(ps);
-      parse_spec_list = dllist_remove_node(parse_spec_list, node);
-      return 0;
-    }
-  else
-    return 1;
 }
 
 #define assign_and_advance(dest,type,size,source,size_counter)	\
@@ -298,9 +231,6 @@ _fe_apply_pspecs(dllist_t* node, const void* udata)
     }
 
   cxt->full_name = context_build_full_name(cxt, fullname_alloc_size);
-
-  if ( parse_spec_list )
-    dllist_foreach(parse_spec_list, &_fe_apply_pspecs, cxt);
 
   return cxt;
 }
@@ -428,122 +358,7 @@ spt_context_reset(spt_context_t* context)
   context_inherit_state(context);
 }
 
-
-
-#define assign_and_advance(dest,type,size,source,size_counter)	\
-  dest = (type *) source;					\
-  source += (ptrdiff_t) size;				\
-  size_counter -= size
-
-static struct parse_spec*
-_parse_single_spec(const char* _spec, const size_t _length)
-{
-  if ( _length < 2 || ( *_spec != '+' && *_spec != '-' ) )
-    return NULL;
-
-  size_t num_elems = 1;
-
-  /* Count the number of name elements. */
-  {
-    const char* search = _spec + 1;
-    while ( (search = strchr(search, '.')) != NULL )
-      {
-	num_elems++;
-	search++;
-      }
-  }
-
-  ssize_t n
-    = sizeof(struct parse_spec)
-    + (num_elems * sizeof(char*))
-    + ( _length + 1 );
-
-  char* buf = (char*) malloc(n);
-  memset(buf, 0, n);
-
-  struct parse_spec* ps = NULL;
-  assign_and_advance(ps, struct parse_spec, sizeof(struct parse_spec), buf, n);
-  assign_and_advance(ps->name_array, char*, num_elems * sizeof(char*), buf, n);
-  assign_and_advance(ps->input, char, _length + 1, buf, n);
-  memcpy(ps->input, _spec, _length + 1);
-#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
-  /* should have used up all the allocated memory  */
-  assert(n == 0);
-  ps->magic = PARSE_SPEC_MAGIC;
-#endif
-  ps->name_array_length = num_elems;
-
-  /* Loop through again and grab name element strings  */
-  unsigned int i = 0;
-  char* search = ps->input + 1;
-  while ( search < ps->input + _length )
-    {
-      buf = search;
-      search = strchrnul(buf, '.');
-      *search = '\0';
-      ps->name_array[i] = buf;
-      i++, search++;
-    }
-
-  if ( *(ps->input) == '+' )
-    {
-      ps->flags
-	= SPT_CONTEXT_POLICY	      /* explicit policy */
-	| SPT_CONTEXT_EXPLICIT_STATE /* set to enabled */;
-      ps->mask = ps->flags;
-    }
-  else if ( *(ps->input) == '-' )
-    {
-      ps->flags = SPT_CONTEXT_POLICY;
-      ps->mask
-	= SPT_CONTEXT_POLICY	      /* explicit policy */
-	| SPT_CONTEXT_EXPLICIT_STATE /* copy the 'disabled' value */;
-    }
-  else
-    abort();
-  return ps;
-}
-
-int
-spt_context_parse_spec(const char* __ispec)
-{
-  if ( !__ispec )
-    return -1;
-
-  size_t count = 0;
-  char* spec = strdup(__ispec);
-  const size_t len = strlen(spec);
-  if ( len < 2 )
-    return 0;
-  char* sp = spec;
-  char* end = spec + len;
-  char* sg_spec_end = NULL;
-  struct parse_spec* pspec;
-
-  while ( sp <= end )
-    {
-      /* Find the end of this single_spec. */
-      sg_spec_end = strchr(sp, ',');
-      if ( !sg_spec_end )
-	sg_spec_end = end;
-
-      *sg_spec_end = '\0';
-      pspec = _parse_single_spec(sp, sg_spec_end - sp);
-      if ( pspec )
-	{
-#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
-	  assert(pspec->magic == PARSE_SPEC_MAGIC);
-#endif
-	  parse_spec_list = dllist_append(parse_spec_list, pspec);
-	  count++;
-	}
-      sp = sg_spec_end + 1;
-    }
-  /* free(spec); */
-  return count;
-}
-
-#include <support/mlog.h> 
+#include <support/mlog.h>
 
 int
 cmlog_real(const spt_context_t* context, const unsigned long spec, const char* fmt, ...)

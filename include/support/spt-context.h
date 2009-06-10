@@ -34,6 +34,11 @@ extern "C"
    */
   typedef struct __spt_context_handler spt_context_handler_t;
 
+  /** Object type that stores parsed context-activation state
+   * specifications.
+   */
+  typedef struct __spt_context_parse_spec spt_context_parse_spec_t;
+
   typedef mlog_loglevel_t spt_loglevel_t;
   /**@}*/
 

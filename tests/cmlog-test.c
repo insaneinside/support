@@ -8,12 +8,18 @@
 #include <support/spt-context.h>
 #include "timeutil.h"
 
-#if 0
-static int
-_print_pspec(const struct parse_spec* ps)
+#ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
+#define CONTEXT_DESCRIPTION(d) , d
+#else
+#define CONTEXT_DESCRIPTION(d)
+#endif
+#define CONTEXT_NAME_SEPARATOR "."
+
+void
+_print_pspec(const spt_context_parse_spec_t* ps)
 {
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
-  assert(ps->magic == PARSE_SPEC_MAGIC);
+  assert(SPT_IS_CONTEXT_PARSE_SPEC(ps));
 #endif
 
   printf("spec %p (%u): %s",
@@ -32,20 +38,26 @@ _print_pspec(const struct parse_spec* ps)
 
       printf("%s%s%s",
 	     ps->name_array[i],
-	     end ? "" : SPT_CONTEXT_NAME_SEPARATOR,
+	     end ? "" : CONTEXT_NAME_SEPARATOR,
 	     end ? "\n" : "");
     }
 
+  return;
+}
+
+static int
+_fe_print_pspec(dllist_t* node, const void* udata __attribute__((unused)) )
+{
+  _print_pspec(node->data);
   return 1;
 }
-#endif	/* 0 */
 
 static void
 do_test(const char* spec)
 {
   char* ok = "ok";
   char* err = "error";
-
+  dllist_t* pspec_list = NULL;
   init_mark_variables();
   fprintf(stderr, "These baseline marks have no code in between:\n");
   mark_label("baseline");
@@ -57,22 +69,33 @@ do_test(const char* spec)
     {
       ok = "Test!";
       begin("Parsing spec string");
-      int r = spt_context_parse_spec(spec);
+      pspec_list = spt_context_parse_specs(spec);
       end();
-      fprintf(stderr, "    -> spt_context_parse_spec returned %d\n", r);
+      int size = dllist_size(pspec_list);
+      fprintf(stderr, "Found %d parse specs.\n", size);
+
+      if ( size > 0 )
+	dllist_foreach(pspec_list, &_fe_print_pspec, NULL);
     }
 
   begin("Creating contexts");
   spt_context_t *all, *A, *B, *C, *D, *E, *E2;
-  all = spt_context_create(NULL, "all", "Test hidden context");
+  all = spt_context_create(NULL, "all" CONTEXT_DESCRIPTION("Test hidden context"));
   all->flags |= SPT_CONTEXT_HIDE_NAME;
-  A = spt_context_create(all, "A", "Test context A");
-  B = spt_context_create(A, "B", "Test context B");
-  C = spt_context_create(A, "C", "Test context C");
-  D = spt_context_create(C, "D", "Test context D");
-  E = spt_context_create(C, "E", "Test context E");
-  E2 = spt_context_create(E, "E", "Test context E (number two)");
+  A = spt_context_create(all, "A"   CONTEXT_DESCRIPTION("Test context A"));
+  B = spt_context_create(A, "B"   CONTEXT_DESCRIPTION("Test context B"));
+  C = spt_context_create(A, "C"   CONTEXT_DESCRIPTION("Test context C"));
+  D = spt_context_create(C, "D"   CONTEXT_DESCRIPTION("Test context D"));
+  E = spt_context_create(C, "E"   CONTEXT_DESCRIPTION("Test context E"));
+  E2 = spt_context_create(E, "E"   CONTEXT_DESCRIPTION("Test context E (number two)"));
   end();
+
+  if ( spec != NULL )
+    {
+      begin("Applying parse specs");
+      spt_context_apply_parse_specs(all, pspec_list);
+      end();
+    }
 
   /* Should activate all contexts. */
   if ( !spec )
