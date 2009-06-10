@@ -20,19 +20,20 @@ macro(option_maybe var doc default)
 endmacro(option_maybe)
 
 # Compile-time options
-option_maybe(SPT_ENABLE_MLOG_CONTEXT "Enable support for logging contexts" ON)
+option_maybe(SPT_ENABLE_LOG_CONTEXT "Enable support for logging contexts" ON)
 option_maybe(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
 option_maybe(SPT_ENABLE_CONSISTENCY_CHECKS "Enable run-time consistency checks" ON)
+option_maybe(SPT_CONTEXT_ENABLE_DESCRIPTION "Enable context descriptions" OFF)
 
 # Build components
 option_maybe(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
 option_maybe(SPT_BUILD_STATIC "Build a static version of the library" ON)
 
-if(SPT_ENABLE_MLOG_CONTEXT)
-  set(SPT_ENABLE_MLOG_CONTEXT 1)
-else(SPT_ENABLE_MLOG_CONTEXT)
-  set(SPT_ENABLE_MLOG_CONTEXT)
-endif(SPT_ENABLE_MLOG_CONTEXT)
+if(SPT_ENABLE_LOG_CONTEXT)
+  set(SPT_ENABLE_LOG_CONTEXT 1)
+else(SPT_ENABLE_LOG_CONTEXT)
+  set(SPT_ENABLE_LOG_CONTEXT)
+endif(SPT_ENABLE_LOG_CONTEXT)
 
 if(SPT_VECT_CACHE_MAGNITUDE)
   set(SPT_VECT_CACHE_MAGNITUDE 1)
@@ -45,6 +46,12 @@ if(SPT_ENABLE_CONSISTENCY_CHECKS)
 else(SPT_ENABLE_CONSISTENCY_CHECKS)
   set(SPT_ENABLE_CONSISTENCY_CHECKS)
 endif(SPT_ENABLE_CONSISTENCY_CHECKS)
+
+if(SPT_CONTEXT_ENABLE_DESCRIPTION)
+  set(SPT_CONTEXT_ENABLE_DESCRIPTION 1)
+else(SPT_CONTEXT_ENABLE_DESCRIPTION)
+  set(SPT_CONTEXT_ENABLE_DESCRIPTION)
+endif(SPT_CONTEXT_ENABLE_DESCRIPTION)
 #
 ################################################################
 
@@ -72,6 +79,8 @@ install(DIRECTORY
 
 set(SPT_WARN_FLAGS
   -Wall
+  -Wconversion
+  -Wextra
   -Wfloat-equal
   -Wno-long-long
   -Wno-variadic-macros
@@ -93,10 +102,10 @@ macro(append_flags VARIABLE)
 
   # Convert back to a string
   string(REPLACE ";" " " "${VARIABLE}" "${${VARIABLE}}")
-  set("${VARIABLE}" "${${VARIABLE}}" PARENT_SCOPE)
+  set("${VARIABLE}" "${${VARIABLE}}")
 endmacro(append_flags)
 
-append_flags(CMAKE_C_FLAGS ${SPT_WARN_FLAGS} --std=c99)
+append_flags(CMAKE_C_FLAGS ${SPT_WARN_FLAGS} --std=c99 -finline)
 append_flags(CMAKE_CXX_FLAGS ${SPT_WARN_FLAGS})
 
 add_subdirectory(src)
