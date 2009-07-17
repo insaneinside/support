@@ -47,6 +47,10 @@ static unsigned long int context_id_base = 0;
 #endif
 
 /** Build the full name that should be assigned to a context.
+ *
+ * @param context Context to build the full name for.
+ *
+ * @param alloc_size 
  */
 static char*
 context_build_full_name(const spt_context_t* context, size_t alloc_size)
@@ -102,8 +106,9 @@ context_destroy_single(spt_context_t* context)
 {
   if ( SPT_IS_CONTEXT(context) )
     {
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
       context->magic = 0;
-
+#endif	/* SPT_ENABLE_CONSISTENCY_CHECKS */
       free(context);
     }
 
@@ -179,7 +184,10 @@ _fe_unparent_context(dllist_t* node,
 #else
   CONTEXT_ALLOC_SIZES(parent, name);
 #endif
+
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
   size_t orig_alloc_size = alloc_size;
+#endif  /* SPT_ENABLE_CONSISTENCY_CHECKS */
 
   if ( ! name /*|| ! description*/ )
     return NULL;
@@ -200,12 +208,19 @@ _fe_unparent_context(dllist_t* node,
   assign_and_advance(cxt->full_name, char, fullname_alloc_size,
 		     buf, alloc_size);
 #ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
+
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
   assert(alloc_size == description_alloc_size);
+#endif  /* SPT_ENABLE_CONSISTENCY_CHECKS */
+
   assign_and_advance(cxt->description, char, description_alloc_size,
 		     buf, alloc_size);
 #endif
+
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
   assert(buf == (unsigned char*) cxt + orig_alloc_size );
   assert(alloc_size == 0);
+#endif  /* SPT_ENABLE_CONSISTENCY_CHECKS */
 
   /* Set object vars and copy strings */
   SPT_LOCK_EXCLUSIVE(context_id_base);
