@@ -9,6 +9,7 @@ extern "C" {
 #endif	/* __cplusplus */
 
 #include <stdlib.h>		/* for alloca() */
+#include <string.h>
 
 #define SV_STRBUFSIZ	64
 
@@ -44,8 +45,11 @@ extern "C" {
 
 #define SV_NE(u, v)	!SV_EQ(u, v)
 
+#ifdef SPT_VECT_CACHE_MAGNITUDE
 #define SV_COPY(u, v)	u[0] = v[0], u[1] = v[1], u[2] = v[2], u[3] = v[3]
-
+#else
+#define SV_COPY(u, v)	u[0] = v[0], u[1] = v[1], u[2] = v[2]
+#endif
 #define SV_SET(v, x, y, z)	v[0] = x, v[1] = y, v[2] = z
 /* #define SV_SET(v, x, y, z)	v[0] = x, v[1] = y, v[2] = z, v[3] = SV_CALC_MAG(v) */
 

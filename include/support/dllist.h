@@ -1,6 +1,7 @@
 #ifndef SUPPORT_DLLIST_H
 #define SUPPORT_DLLIST_H
 
+#include <support/support-config.h>
 #include <stdint.h>
 
 /** @defgroup dllist Double-linked lists
@@ -17,20 +18,29 @@ extern "C"
 
   typedef struct _dllist
   {
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+    uint32_t magic;
+#endif
     void *data;
 
     struct _dllist* next;
     struct _dllist* prev;
-    uint32_t magic;
   } dllist_t;
 
 #define dllist_next(node) ((*node).next)
 #define dllist_prev(node) ((*node).prev)
 
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+
 #define DLLIST_MAGIC  ( ( 'D' << 3 ) + ( 'L' << 2 ) + ( 'S' << 1 ) + 'T' )
 #define DLLIST_IS_NODE(n) \
   ( n && *((uint32_t*) n + offsetof(dllist_t, magic)) == DLLIST_MAGIC )
-/* #define DLLIST_IS_NODE(n) (n) */
+
+#else
+
+#define DLLIST_IS_NODE(n) (n)
+
+#endif	/* SPT_ENABLE_CONSISTENCY_CHECKS */
 
   typedef int (*dllist_func) (dllist_t* , const void*);
 
@@ -64,6 +74,10 @@ extern "C"
    */
   dllist_t* dllist_append(dllist_t* list, void* data);
 
+
+  /** Append a node to the end of the list.
+   */
+  dllist_t* dllist_append_node(dllist_t* list, dllist_t* node);
 
   /** prepend data to the start of list.
    */
@@ -149,6 +163,13 @@ extern "C"
 
   dllist_t* dllist_sort(dllist_t* list, dllist_cmpfunc sortfunc);
 
+  /** Create a copy of an entire list (and data pointers, of course).
+   */
+  dllist_t* dllist_copy(dllist_t* src);
+  
+  /** Create a copy of a single list node.
+   */
+  dllist_t* dllist_node_copy(dllist_t* node);
 
 #ifdef __cplusplus
 }
