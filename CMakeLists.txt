@@ -91,7 +91,7 @@ macro(append_flags VARIABLE)
 
   # Convert back to a string
   string(REPLACE ";" " " "${VARIABLE}" "${${VARIABLE}}")
-  set("${VARIABLE}" "${${VARIABLE}}" PARENT_SCOPE)
+  set("${VARIABLE}" "${${VARIABLE}}")
 endmacro(append_flags)
 
 append_flags(CMAKE_C_FLAGS ${SPT_WARN_FLAGS} --std=c99)
