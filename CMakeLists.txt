@@ -24,6 +24,7 @@ option_maybe(SPT_ENABLE_LOG_CONTEXT "Enable support for logging contexts" ON)
 option_maybe(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
 option_maybe(SPT_ENABLE_CONSISTENCY_CHECKS "Enable run-time consistency checks" ON)
 option_maybe(SPT_CONTEXT_ENABLE_DESCRIPTION "Enable context descriptions" OFF)
+set(SPT_DEFAULT_SCALAR_TYPE "float" CACHE STRING "Default type for scalar values: one of \"float\", \"double\", or \"long double\".")
 
 # Build components
 option_maybe(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
@@ -52,6 +53,20 @@ if(SPT_CONTEXT_ENABLE_DESCRIPTION)
 else(SPT_CONTEXT_ENABLE_DESCRIPTION)
   set(SPT_CONTEXT_ENABLE_DESCRIPTION)
 endif(SPT_CONTEXT_ENABLE_DESCRIPTION)
+
+set(SPT_SCALAR_TYPE_DEFINE "" CACHE STRING "Symbol to define for scalar_t type.")
+
+if(SPT_DEFAULT_SCALAR_TYPE STREQUAL "float")
+  set(SPT_SCALAR_TYPE_DEFINE "S_TYPE_FLOAT")
+elseif(SPT_DEFAULT_SCALAR_TYPE STREQUAL "double")
+  set(SPT_SCALAR_TYPE_DEFINE "S_TYPE_DOUBLE")
+elseif(SPT_DEFAULT_SCALAR_TYPE STREQUAL "long double")
+  set(SPT_SCALAR_TYPE_DEFINE "S_TYPE_LONG_DOUBLE")
+else(SPT_DEFAULT_SCALAR_TYPE STREQUAL "float")
+  message(FATAL_ERROR "Bad value for SPT_DEFAULT_SCALAR_TYPE.  Must be one of \"float\", \"double\", or \"long double\".")
+endif(SPT_DEFAULT_SCALAR_TYPE STREQUAL "float")
+
+mark_as_advanced(SPT_SCALAR_TYPE_DEFINE FORCE)
 #
 ################################################################
 
@@ -62,7 +77,7 @@ set(CONFIG_HEADER_SOURCE
 set(CONFIG_HEADER_DEST
   "${Support_BINARY_DIR}/include/support/support-config.h")
 mark_as_advanced(FORCE CONFIG_HEADER_SOURCE CONFIG_HEADER_DEST)
-configure_file(${CONFIG_HEADER_SOURCE} ${CONFIG_HEADER_DEST})
+configure_file(${CONFIG_HEADER_SOURCE} ${CONFIG_HEADER_DEST} @ONLY)
 
 set(SUPPORT_INCLUDE_DIRS
   "${Support_SOURCE_DIR}/include" "${Support_BINARY_DIR}/include"
