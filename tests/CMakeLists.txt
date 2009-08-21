@@ -1,7 +1,5 @@
 if(NOT SUPPORT_LIBRARY)
   message(FATAL_ERROR "${SUPPORT_LIBRARY} is not set!")
-else(NOT SUPPORT_LIBRARY)
-  message("Support library: ${SUPPORT_LIBRARY}")
 endif(NOT SUPPORT_LIBRARY)
 link_libraries("${SUPPORT_LIBRARY}")
 
