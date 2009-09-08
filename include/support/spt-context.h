@@ -2,6 +2,8 @@
 #ifndef SPT_CONTEXT_H
 #define SPT_CONTEXT_H	1
 
+#include <unistd.h>		/* for ssize_t */
+
 #include <support/support-config.h>
 #include <support/mlog.h>
 
@@ -213,7 +215,7 @@ extern "C"
    * Parses the passed string, and searches for similarly-named
    * contexts under the given root context.
    *
-   * @param spec A string specifying the contexts to enable or
+   * @param __ispec A string specifying the contexts to enable or
    * disable. In <a href="http://www.rfc-editor.org/std/std68.txt">ABNF</a>
    * notation:
    * <code>
@@ -234,12 +236,38 @@ extern "C"
    * name: <code>+parent_name.child_name</code>
    *
    *
-   * @return The number of individual contexts enabled or disabled, or
-   * a negative error code if an error was encountered.
+   * @return A list of spt_context_parse_spec_t pointers.
    */
-  int
-  spt_context_parse_spec(/*spt_context_t* root, */const char* spec);
+  dllist_t*
+  spt_context_parse_specs(const char* __ispec);
 
+  /** Free the memory used by a single parse specification.
+   *
+   * @param pspec A pointer to the parse specification object to free.
+   */
+  void
+  spt_context_parse_spec_destroy(spt_context_parse_spec_t* pspec);
+
+  /** Free a list of parse specification objects.
+   *
+   * @param pspec_list A list of parse specification object pointers.
+   */
+  void
+  spt_context_parse_spec_destroy_list(dllist_t* pspec_list);
+
+
+  /** Apply matching parse specifications to a context.  Each parse
+   * specification in the list will be tested, and if it matches the
+   * context, it will be applied to the context.
+   *
+   * @param context The context to apply the parse specifications to.
+   *
+   * @param pspec_list A list of parse specifications to apply.
+   *
+   */
+  void
+  spt_context_apply_parse_specs(spt_context_t* context,
+				dllist_t* pspec_list);
   /**@}*/
 
 

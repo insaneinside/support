@@ -127,6 +127,8 @@ extern "C" {
 
   /* Constants */
 #if defined(S_TYPE_DOUBLE) || defined(S_TYPE_FLOAT)
+#define S_LITERAL(n)	n##f
+
 #define SC_E		M_E
 #define SC_LOG2E	M_LOG2E
 #define SC_LOG10E	M_LOG10E
@@ -144,6 +146,8 @@ extern "C" {
 #define SC_SQRT2        M_SQRT2  
 #define SC_SQRT1_2	M_SQRT1_2
 #elif defined(S_TYPE_LONG_DOUBLE)
+#define S_LITERAL(n)	n##l
+
 #define SC_E		M_El
 #define SC_LOG2E	M_LOG2El
 #define SC_LOG10E	M_LOG10El

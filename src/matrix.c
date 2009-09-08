@@ -12,7 +12,7 @@
 void
 _print_matrix(Matrix *m, char *label)
 {
-  int i, j;
+  unsigned int i, j;
   printf("%s = {\n", label);
 
   for ( i = 0; i < m->rows; i++ )
@@ -20,7 +20,7 @@ _print_matrix(Matrix *m, char *label)
       printf("  [ ");
 
       for(j=0; j < m->cols; j++)
-	printf("%g%c%c", matrix_get(m, i, j), (j == (m->cols-1)) ? 0 : ',', (j == (m->cols-1)) ? 0 : ' ');
+	printf("%g%c%c", (double) matrix_get(m, i, j), (j == (m->cols-1)) ? 0 : ',', (j == (m->cols-1)) ? 0 : ' ');
     
       printf(" ]\n");
     }
@@ -49,7 +49,7 @@ matrix_alloc()
 Matrix*
 matrix_new(const unsigned int rows, const unsigned int cols)
 {
-  int i;
+  unsigned int i;
 
   Matrix *out = matrix_alloc();
   assert(out != NULL);
@@ -88,7 +88,7 @@ matrix_new(const unsigned int rows, const unsigned int cols)
 Matrix*
 matrix_clear(Matrix *m)
 {
-  int i;
+  unsigned int i;
 
 #ifdef MATRIX_BY_ROW
   for(i=0; i < m->rows; i++)
@@ -116,7 +116,7 @@ matrix_clear(Matrix *m)
 Matrix*
 matrix_dupe(Matrix *m)
 {
-  int i, j;
+  unsigned int i, j;
   Matrix *out;
   out = matrix_new(m->rows, m->cols);
 
@@ -152,7 +152,7 @@ matrix_free(Matrix *m)
  */
 Matrix* matrix_free_data(Matrix* m)
 {
-  int i
+  unsigned int i
 #ifdef MATRIX_BY_VALUE
     ,j
 #endif
@@ -193,7 +193,7 @@ Matrix* matrix_free_data(Matrix* m)
  * @return m
  */
 Matrix *matrix_set_identity(Matrix *m) {
-  int i;
+  unsigned int i;
   assert(MATRIX_IS_SQUARE(m));
 
   /* Clear all values */
@@ -215,7 +215,7 @@ Matrix *matrix_set_identity(Matrix *m) {
  * @return m
  */
 Matrix *matrix_set_row(Matrix *m, const unsigned int row, ...) {
-  int i;
+  unsigned int i;
   va_list vl;
 
   va_start(vl, row);
@@ -224,7 +224,7 @@ Matrix *matrix_set_row(Matrix *m, const unsigned int row, ...) {
   va_start(vl, row);
 
   for(i=0; i < m->cols; i++)
-    matrix_set(m, row, i, va_arg(vl, double));
+    matrix_set(m, row, i, (scalar_t) va_arg(vl, double));
 
   va_end(vl);
 
@@ -239,7 +239,7 @@ Matrix *matrix_set_row(Matrix *m, const unsigned int row, ...) {
  * @return m
  */
 Matrix *matrix_set_col(Matrix *m, const unsigned int col, ...) {
-  int i;
+  unsigned int i;
   va_list vl;
 
   assert(col < m->cols);
@@ -247,7 +247,7 @@ Matrix *matrix_set_col(Matrix *m, const unsigned int col, ...) {
   va_start(vl, col);
 
   for(i=0; i < m->rows; i++)
-    matrix_set(m, i, col, va_arg(vl, double));
+    matrix_set(m, i, col, (scalar_t) va_arg(vl, double));
 
   va_end(vl);
 
@@ -266,7 +266,7 @@ Matrix *matrix_set_col(Matrix *m, const unsigned int col, ...) {
  */
 Matrix *matrix_minor(Matrix *m, const unsigned int row, const unsigned int col) {
   Matrix *out;
-  int io, im, jo, jm;
+  unsigned int io, im, jo, jm;
   assert(row < m->rows && col < m->cols);
 
 #ifdef MATRIX_BY_ROW		/* We'll need to just copy everything */
@@ -309,7 +309,7 @@ Matrix *matrix_minor(Matrix *m, const unsigned int row, const unsigned int col) 
  */
 scalar_t matrix_det(Matrix *m) {
   Matrix *minor;
-  int j;
+  unsigned int j;
   scalar_t rdet, sign;
 
   assert(MATRIX_IS_SQUARE(m));
@@ -324,7 +324,7 @@ scalar_t matrix_det(Matrix *m) {
     for(j=0; j < m->cols; j++) {
       minor = matrix_minor(m, 0, j);
 
-      sign = (j%2) ? 1 : -1;
+      sign = (j%2) ? S_LITERAL(1.0) : S_LITERAL(-1.0);
       rdet += sign * matrix_get(m, 0, j) * matrix_det(minor);
 
       matrix_free(minor);
@@ -348,7 +348,7 @@ scalar_t matrix_det(Matrix *m) {
 Matrix*
 matrix_mult(Matrix *a, Matrix *b, Matrix *dest)
 {
-  int i, j, k;
+  unsigned int i, j, k;
   scalar_t s;
 
   assert(a->cols == b->rows);
@@ -383,7 +383,7 @@ matrix_mult(Matrix *a, Matrix *b, Matrix *dest)
 Matrix*
 matrix_add(Matrix *a, Matrix *b, Matrix *dest)
 {
-  int i, j;
+  unsigned int i, j;
 
   assert(MATRIX_CONGRUENT(a, b));
 
@@ -410,7 +410,7 @@ matrix_add(Matrix *a, Matrix *b, Matrix *dest)
  */
 Matrix* matrix_transpose(Matrix *m, Matrix *dest)
 {
-  int i, j;
+  unsigned int i, j;
 #ifdef MATRIX_BY_VALUE
   scalar_t *a, *b;
 #endif
@@ -455,7 +455,7 @@ Matrix* matrix_transpose(Matrix *m, Matrix *dest)
 int
 matrix_compare(Matrix *a, Matrix *b)
 {
-  int i, j;
+  unsigned int i, j;
 
   if(!MATRIX_CONGRUENT(a,b))
     return -1;

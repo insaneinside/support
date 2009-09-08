@@ -7,7 +7,12 @@
 
 #include <support/mlog.h>
 
+#if MLOG_MIN_LOGLEVEL > 0
 #define LIMLEVEL(l) (l >= MLOG_MIN_LOGLEVEL ? ( l <= MLOG_MAX_LOGLEVEL ? l : MLOG_MAX_LOGLEVEL ) : MLOG_MIN_LOGLEVEL)
+#else
+#define LIMLEVEL(l) (l <= MLOG_MAX_LOGLEVEL ? l : MLOG_MAX_LOGLEVEL )
+#endif
+
 #define LEVEL(spec)	(spec & MLOG_LOGLEVEL_MASK )
 #define FLAGS(spec)	(spec & (~MLOG_LOGLEVEL_MASK))
 
@@ -46,7 +51,7 @@ mlogv(const unsigned long spec, const char* fmt, va_list ap)
   char* t;
 
 
-  if ( mloglevel < MLOG_MIN_LOGLEVEL || mloglevel > MLOG_MAX_LOGLEVEL )
+  if ( LIMLEVEL(mloglevel) != mloglevel )
     {
       fprintf(stderr,
 	      "%s: global mloglevel is out of bounds "
@@ -92,7 +97,7 @@ mlogv(const unsigned long spec, const char* fmt, va_list ap)
 
   if ( ! (flags & F_NONEWLINE) )
     fputc('\n', stderr);
-  lhnl = ! (flags & F_NONEWLINE);
+  lhnl = (char) ! (flags & F_NONEWLINE);
 
   va_end(ap);
 
