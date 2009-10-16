@@ -6,6 +6,7 @@
 
 #include <support/support-config.h>
 #include <support/mlog.h>
+#include <support/dllist.h>
 
 /** @defgroup context Contexts
  *
@@ -120,6 +121,7 @@ extern "C"
   };
   /**@}*/
 
+  /* ******************************** */
 
   /**@name Creation/Destruction
    *
@@ -174,6 +176,58 @@ extern "C"
   void
   spt_context_destroy_recursive(spt_context_t* context);
   /**@}*/
+
+  /* ******************************** */
+
+  /** @name Context hierarchy manipulation
+   *
+   * Contexts can be dynamically reparented.
+   *
+   *@{
+   */
+
+  /** Reparent a context.  If it currently has a parent set, the
+   *  parent and sibling links will be cleared first.
+   *
+   * @see spt_context_clear_parent
+   *
+   * @param context The log context to set parent links for.
+   *
+   * @param parent Parent context.
+   */
+  void
+  spt_context_set_parent(spt_context_t* context, spt_context_t* parent);
+
+
+  /** Clear a context's parent and sibling links.
+   *
+   * @param context The context to detach from its parent's hierarchy.
+   */
+  void
+  spt_context_clear_parent(spt_context_t* context);
+
+
+  /** Callback (delegate) type used with @link spt_context_each_child. */
+  typedef uint8_t (spt_context_user_callback_t)(spt_context_t* context, void* userdata);
+
+  /** Call a function on each of a context's child nodes.
+   *
+   * @param context Context containing target child contexts.
+   *
+   * @param callback Pointer to the function to call on each child
+   *                 context.
+   *
+   * @param userdata Extra data-pointer to pass to @p callback.  May be
+   *                 @c NULL.
+   *
+   */
+  uint8_t
+  spt_context_each_child(const spt_context_t* context,
+                         spt_context_user_callback_t* callback,
+                         void* userdata);
+  /**@}*/
+
+  /* ******************************** */
 
   /** @name Activation
    *

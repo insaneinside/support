@@ -5,6 +5,12 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#ifndef NDEBUG
+#include <assert.h>
+#else
+#define assert(expression)
+#endif  /* NDEBUG */
+
 #include <support/support-config.h>
 #include <support/spt-context.h>
 #include <support/macro.h>
@@ -29,28 +35,128 @@ static unsigned long int context_id_base = 0;
     ? ( strlen(parent->full_name) + SPT_CONTEXT_NAME_SEPARATOR_LENGTH + name_alloc_size ) \
     : 0; /* will be using name pointer */				\
   size_t description_alloc_size = description ? strlen(description) + 1 : 0; \
-  size_t alloc_size							\
-  = sizeof(spt_context_t)						\
-    + name_alloc_size							\
-    + fullname_alloc_size						\
-    + description_alloc_size;
+  size_t alloc_size                                                    \
+    = sizeof(spt_context_t)                                            \
+    + name_alloc_size                                                  \
+    + fullname_alloc_size                                              \
+    + description_alloc_size
 #else
 #define CONTEXT_ALLOC_SIZES(parent,name)				\
   size_t name_alloc_size = strlen(name) + 1;				\
   size_t fullname_alloc_size = ( parent && ! ( parent->flags & SPT_CONTEXT_HIDE_NAME ) ) \
     ? ( strlen(parent->full_name) + SPT_CONTEXT_NAME_SEPARATOR_LENGTH + name_alloc_size ) \
     : 0; /* will be using name pointer */				\
-  size_t alloc_size							\
-  = sizeof(spt_context_t)						\
-    + name_alloc_size							\
+  size_t alloc_size                                                    \
+    = sizeof(spt_context_t)                                            \
+    + name_alloc_size                                                  \
     + fullname_alloc_size
 #endif
+
+uint8_t
+spt_context_each_child(const spt_context_t* context,
+                       spt_context_user_callback_t* callback,
+                       void* userdata)
+{
+  uint8_t times_called = 0;
+
+  if ( SPT_IS_CONTEXT(context) && context->first_child )
+    {
+      spt_context_t* node = NULL;
+      spt_context_t* next = context->first_child;;
+
+      while ( next )
+	{
+          node = next;
+	  callback(node, userdata);
+
+          times_called++;
+	  next = node->next_sibling;
+	}
+    }
+
+  return times_called;
+}
+
+/** Append a child node to a context.
+ *
+ * @param cxt Context to append @p child to.
+ *
+ * @param child Context to append to @p cxt.
+ *
+ * @internal
+ */
+__inline__ void
+context_append_child(spt_context_t* cxt, spt_context_t* child)
+{
+  /* Do we need to initialize the first_child list pointer, or just
+   * append after last_child?
+   */
+  if ( cxt->first_child )
+    {
+      cxt->last_child->next_sibling = child;
+      child->prev_sibling = cxt->last_child;
+    }
+  else
+    /* First child appended. */
+    cxt->first_child = child;
+
+  /* Reset the last_child pointer, and the new child's next_sibling
+   * and parent pointers.
+   */
+  cxt->last_child = child;
+  cxt->last_child->next_sibling = NULL;
+  cxt->last_child->parent = cxt;
+}
+
+/** Remove a context from its list of siblings.
+ *
+ * Doesn't modify the context's parent object.
+ *
+ * @internal
+ */
+__inline__ uint8_t
+context_unlink_parent_and_siblings(spt_context_t* cxt)
+{
+  if ( cxt->prev_sibling != NULL )
+    cxt->prev_sibling->next_sibling = cxt->next_sibling;
+  if ( cxt->next_sibling != NULL )
+    cxt->next_sibling->prev_sibling = cxt->prev_sibling;
+
+  cxt->prev_sibling = NULL;
+  cxt->next_sibling = NULL;
+  cxt->parent = NULL;
+  return 0;
+}
+
+/** Remove a child node from a context's list of child contexts.
+ *
+ * @internal
+ */
+__inline__ uint8_t
+context_remove_child(spt_context_t* cxt, spt_context_t* child)
+{
+  assert( SPT_CONTEXT_HAS_CHILDREN(cxt) );
+
+  /* If it's the first or last child entry, we need to update this
+   * context's {first|last}_child links.
+   */
+  if ( child == cxt->first_child )
+    cxt->first_child = child->next_sibling;
+  else if ( child == cxt->last_child )
+    cxt->last_child = child->prev_sibling;
+
+  /* Unlink the child from this context and its siblings. */
+  context_unlink_parent_and_siblings(child);
+  return 0;
+}
 
 /** Build the full name that should be assigned to a context.
  *
  * @param context Context to build the full name for.
  *
- * @param alloc_size 
+ * @param alloc_size Number of bytes allocated for the @c full_name
+ * string.
+ *
  */
 static char*
 context_build_full_name(const spt_context_t* context, size_t alloc_size)
@@ -58,9 +164,9 @@ context_build_full_name(const spt_context_t* context, size_t alloc_size)
   if ( alloc_size <= 0 )
     {
       if ( context->flags & SPT_CONTEXT_HIDE_NAME )
-	return NULL;
+        return NULL;
       else
-	return context->name;
+        return context->name;
     }
   size_t left = alloc_size;
   char* out = NULL;
@@ -101,6 +207,12 @@ context_build_full_name(const spt_context_t* context, size_t alloc_size)
  * Context creation and destruction
  */
 
+/** Destroy a single context, without touching its child contexts.
+ *
+ * @param context The context to destroy.
+ *
+ * @internal
+ */
 static void
 context_destroy_single(spt_context_t* context)
 {
@@ -129,50 +241,44 @@ context_destroy_single(spt_context_t* context)
 
 /** Call spt_context_destroy_recursive on a node's data.
  */
-static int
-_fe_destroy_context_recursive(dllist_t* node,
-			      const void* udata __attribute__ (( unused )) )
+static uint8_t
+_fe_destroy_context_recursive(spt_context_t* context,
+			      void* udata __attribute__ (( unused )) )
 {
-  if ( node )
-    {
-      spt_context_t* cxt = (spt_context_t*) (node->data);
-      if ( cxt->children )
-	spt_context_destroy_recursive(cxt);
-      else
-	context_destroy_single(cxt);
-      node->data = NULL;
-    }
+  if ( SPT_CONTEXT_HAS_CHILDREN(context) )
+    spt_context_destroy_recursive(context);
+  else
+    context_destroy_single(context);
+
   return 1;
 }
 
 /** Set the context's parent to NULL.
+ *
+ * @internal
  */
-static int
-_fe_unparent_context(dllist_t* node,
-		     const void* udata __attribute__ (( unused )) )
+static uint8_t
+_fe_unparent_context(spt_context_t* cxt,
+		     void* udata __attribute__ (( unused )) )
 {
-  if ( node )/* && node->data ) */
-    {
-      spt_context_t* context = (spt_context_t*) (node->data);
-      context->parent = NULL;
-    }
+  cxt->parent = NULL;
   return 1;
 }
 
 #define assign_and_advance(dest,type,size,source,size_counter)	\
   dest = (type *) source;					\
-  source += (ptrdiff_t) size;				\
+  source += (ptrdiff_t) size;                                   \
   size_counter -= size
 
 #ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
-  spt_context_t*
-  spt_context_create(spt_context_t* parent,
-		     const char* name,
-		     const char* description)
+spt_context_t*
+spt_context_create(spt_context_t* parent,
+                   const char* name,
+                   const char* description)
 #else
   spt_context_t*
   spt_context_create(spt_context_t* parent,
-		     const char* name)
+                     const char* name)
 #endif
 {
   unsigned char* buf = NULL;
@@ -202,11 +308,11 @@ _fe_unparent_context(dllist_t* node,
 
   /* Assign pointers */
   assign_and_advance(cxt, spt_context_t, sizeof(spt_context_t),
-		     buf, alloc_size);
+                     buf, alloc_size);
   assign_and_advance(cxt->name, char, name_alloc_size,
-		     buf, alloc_size);
+                     buf, alloc_size);
   assign_and_advance(cxt->full_name, char, fullname_alloc_size,
-		     buf, alloc_size);
+                     buf, alloc_size);
 #ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
 
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
@@ -214,7 +320,7 @@ _fe_unparent_context(dllist_t* node,
 #endif  /* SPT_ENABLE_CONSISTENCY_CHECKS */
 
   assign_and_advance(cxt->description, char, description_alloc_size,
-		     buf, alloc_size);
+                     buf, alloc_size);
 #endif
 
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
@@ -238,10 +344,13 @@ _fe_unparent_context(dllist_t* node,
     strncpy(cxt->description, description, description_alloc_size);
 #endif
 
+  /* If parent node given, append the node to the parent's child list
+   * and reset the node (reset ensures properly-inherited activation
+   * state).
+   */
   if ( parent )
     {
-      cxt->parent = parent;
-      parent->children = dllist_append(parent->children, cxt);
+      context_append_child(parent, cxt);
       spt_context_reset(cxt);
     }
 
@@ -256,14 +365,18 @@ spt_context_destroy(spt_context_t* context)
   if ( ! context )
     return;
 
-  if ( context->children )
-    {
-      dllist_foreach(context->children, _fe_unparent_context, NULL);
-      dllist_free(context->children);
-    }
+  /* Free list of child contexts */
+  if ( SPT_CONTEXT_HAS_CHILDREN(context) )
+    spt_context_each_child(context, &_fe_unparent_context, NULL);
 
-  if ( context->parent && context->parent->children )
-    context->parent->children = dllist_remove(context->parent->children, context);
+  if ( context->parent )
+    {
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+      assert( SPT_CONTEXT_HAS_CHILDREN(context->parent) );
+#endif  /* SPT_ENABLE_CONSISTENCY_CHECKS */
+
+      context_remove_child(context->parent, context);
+    }
   context_destroy_single(context);
 }
 
@@ -273,10 +386,9 @@ spt_context_destroy_recursive(spt_context_t* context)
   if ( ! context )
     return;
 
-  if ( context->children )
+  if ( SPT_CONTEXT_HAS_CHILDREN(context) )
     {
-      dllist_foreach(context->children, _fe_destroy_context_recursive, NULL);
-      dllist_free(context->children);
+      spt_context_each_child(context, &_fe_destroy_context_recursive, NULL);
     }
 
   context_destroy_single(context);
@@ -288,38 +400,23 @@ spt_context_destroy_recursive(spt_context_t* context)
 
 static void context_inherit_state(spt_context_t* context);
 
-/* /\** Reset -- to implicit (inherited) -- the context's state policy.
- *  *\/
- * static int
- * _fe_reset_policy(dllist_t* node, const void* udata)
- * {
- *   spt_context_t* context = NULL;
- *   if ( node && node->data )
- *     {
- *       context = (spt_context_t*) (node->data);
- *       spt_context_reset(context);
- *     }
- *   return 1;
- * } */
-
 /** Refresh inherited state data by calling context_inherit_state on
  *  each list element.
+ *
+ * @internal
  */
-static int
-_fe_inherit_state(dllist_t* node,
-		  const void* udata __attribute__ (( unused )) )
+static uint8_t
+_fe_inherit_state(spt_context_t* context,
+		  void* udata __attribute__ (( unused )) )
 {
-  spt_context_t* context = NULL;
-  if ( node && node->data )
-    {
-      context = (spt_context_t*) (node->data);
-      context_inherit_state(context);
-    }
+  context_inherit_state(context);
   return 1;
 }
 
 /** Refresh a context's implicit (inherited) state from the parent
  *  context.
+ *
+ * @internal
  */
 static void
 context_inherit_state(spt_context_t* context)
@@ -334,8 +431,8 @@ context_inherit_state(spt_context_t* context)
 	context->flags &= ~SPT_CONTEXT_IMPLICIT_STATE;
     }
 
-  if ( context->children )
-    dllist_foreach(context->children, _fe_inherit_state, NULL);
+  if ( SPT_CONTEXT_HAS_CHILDREN(context) )
+    spt_context_each_child(context, &_fe_inherit_state, NULL);
 }
 
 
@@ -346,8 +443,8 @@ spt_context_enable(spt_context_t* context/*, const unsigned int recursive*/)
   context->flags |= SPT_CONTEXT_EXPLICIT_STATE; /* enable */
 
   /* Update child contexts */
-  if ( context->children )
-    dllist_foreach(context->children, _fe_inherit_state, NULL);
+  if ( SPT_CONTEXT_HAS_CHILDREN(context) )
+    spt_context_each_child(context, &_fe_inherit_state, NULL);
 }
 
 
@@ -358,8 +455,8 @@ spt_context_disable(spt_context_t* context)
   context->flags &= ~SPT_CONTEXT_EXPLICIT_STATE; /* disable */
 
   /* Update child contexts */
-  if ( context->children )
-    dllist_foreach(context->children, (dllist_func) _fe_inherit_state, NULL);
+  if ( SPT_CONTEXT_HAS_CHILDREN(context) )
+    spt_context_each_child(context, &_fe_inherit_state, NULL);
 }
 
 
@@ -385,12 +482,20 @@ cmlog_real(const spt_context_t* context, const unsigned long spec, const char* f
   int r = -1;
   static char* last_full_name = NULL;
 
+  /* Don't do anything if the log context is inactive. */
   if ( ! spt_context_active(context) )
     return 0;
 
+  /* Don't do anything if the global log level is less than the
+   * message's log level.
+   */
   if ( mlog_get_level() < lvl )
     return 0;
   const char* asfmt = CMLOG_FORMAT;
+
+  /* If the context has the HIDE_NAME flag set, use the appropriate printf
+   * format.
+   */
   if ( context->flags & SPT_CONTEXT_HIDE_NAME )
     asfmt = CMLOG_FORMAT_NONAME;
 

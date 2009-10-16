@@ -19,8 +19,8 @@ struct pspec_applydata
 };
 
 /* Foreward declarations */
-static int
-_fe_context_apply_single_spec(dllist_t* node, const void* udata);
+static uint8_t
+_fe_context_apply_single_spec(spt_context_t* context, void* udata);
 
 /* ****************************************************************
  * Utility functions
@@ -55,7 +55,7 @@ _apply_pspec(const spt_context_parse_spec_t* ps, spt_context_t* cxt)
       else
       	spt_context_disable(cxt);
     }
-  dllist_foreach(cxt->children, _fe_context_apply_single_spec, ps);
+  spt_context_each_child(cxt, &_fe_context_apply_single_spec, (void*) ps);
 
   return 1;
 }
@@ -144,12 +144,11 @@ _fe_destroy_parse_spec(dllist_t* node, const void* udata __attribute__(( unused 
   return 1;
 }
 
-static int
-_fe_context_apply_single_spec(dllist_t* node, const void* udata)
+static uint8_t
+_fe_context_apply_single_spec(spt_context_t* context, void* udata)
 {
-  spt_context_t* cxt = (spt_context_t*) node->data;
   spt_context_parse_spec_t* ps = (spt_context_parse_spec_t*) udata;
-  _apply_pspec(ps, cxt);
+  _apply_pspec(ps, context);
   return 1;
 }
 

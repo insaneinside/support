@@ -2,7 +2,6 @@
 #define SUPPORT_PRIVATE_SPT_CONTEXT_H
 
 #include <support/support-config.h>
-#include <support/dllist.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -67,12 +66,26 @@ struct __spt_context
    */
   unsigned long int flags;
 
-  /** List of child contexts */
-  dllist_t* children;
+  /**@name Context relations
+   *@{
+   */
 
-  /** If not NULL, the context of which this is a subcontext.
+  /** The context of which this is a subcontext.
    */
   struct __spt_context* parent;
+
+  /** List of child contexts -- first child */
+  struct __spt_context* first_child;
+
+  /** List of child contexts -- last child */
+  struct __spt_context* last_child;
+
+  /** Next sibling context */
+  struct __spt_context* next_sibling;
+
+  /** Previous sibling context. */
+  struct __spt_context* prev_sibling;
+  /**@}*/
 };
 
   /** @internal */
@@ -130,9 +143,14 @@ struct __spt_context_parse_spec
   ( cxt && ((spt_context_t*) cxt)->magic == SPT_CONTEXT_MAGIC )
 #define SPT_IS_CONTEXT_PARSE_SPEC(pspec) \
   ( pspec && ((spt_context_parse_spec_t*) pspec)->magic == SPT_CONTEXT_PARSE_SPEC_MAGIC )
+
+#define SPT_CONTEXT_HAS_CHILDREN(cxt) (SPT_IS_CONTEXT(cxt) && cxt->first_child != NULL )
+
 #else
+
 #define SPT_IS_CONTEXT(cxt) (cxt)
 #define SPT_IS_CONTEXT_PARSE_SPEC(pspec) (pspec)
+#define SPT_CONTEXT_HAS_CHILDREN(cxt) (cxt->first_child != NULL )
 #endif
 
 #ifdef __cplusplus
