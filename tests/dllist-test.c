@@ -139,7 +139,6 @@ main(int argc, char** argv)
   endf("%u total lines", lines);
 
   begin("Selecting random words");
-  st = clock();
   for ( i = 0; i < nteststrings; i++ )
     {
       str[i] = NULL;
