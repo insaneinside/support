@@ -100,7 +100,7 @@ file_get_line(FILE* fp, const unsigned int ln, char** buf, size_t* count)
 int
 main(int argc, char** argv)
 {
-  init_mark_variables();
+  timeutil_init_mark_variables();
   FILE* fp;
   char** str;
   unsigned int lines;
@@ -134,11 +134,11 @@ main(int argc, char** argv)
       perror(WORDLIST);
       abort();
     }
-  begin("Counting lines");
+  timeutil_begin("Counting lines");
   lines = file_count_lines(fp);
-  endf("%u total lines", lines);
+  timeutil_endf("%u total lines", lines);
 
-  begin("Selecting random words");
+  timeutil_begin("Selecting random words");
   for ( i = 0; i < nteststrings; i++ )
     {
       str[i] = NULL;
@@ -159,25 +159,25 @@ main(int argc, char** argv)
 /*	  str[i][j] = '\0'; */
 
     }
-  end();
+  timeutil_end();
   fclose(fp);
 
 
   /* Populate the list */
   list = NULL;
 
-  begin("Populating list");
+  timeutil_begin("Populating list");
   for(i=0; i < nteststrings; i++)
     list = dllist_append(list, str[i]);
-  end();
+  timeutil_end();
 
   /* Print out list */
   fprintf(stderr, "List contents:\n");
   dllist_foreach(list, &_print_string, NULL);
 
-  begin("\nSorting list using dllist_sort");
+  timeutil_begin("\nSorting list using dllist_sort");
   list = dllist_sort(list, &alphacmp);
-  end();
+  timeutil_end();
 
   printf("List contents:\n");
   dllist_foreach(list, &_print_string, NULL);
@@ -185,10 +185,10 @@ main(int argc, char** argv)
   list = NULL;
 
   /* \n in middle of next string because it's been wrapped to 70 columns. */
-  begin("\nOkay, now building a sorted structure from scratch using the same\nstrings");
+  timeutil_begin("\nOkay, now building a sorted structure from scratch using the same\nstrings");
   for ( i = 0; i < nteststrings; i++ )
     list = dllist_insert_sorted(list, str[i], &alphacmp);
-  end();
+  timeutil_end();
 
   printf("List contents:\n");
   dllist_foreach(list, &_print_string, NULL);

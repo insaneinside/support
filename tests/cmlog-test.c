@@ -58,19 +58,19 @@ do_test(const char* spec)
   char* ok = "ok";
   char* err = "error";
   dllist_t* pspec_list = NULL;
-  init_mark_variables();
+  timeutil_init_mark_variables();
   fprintf(stderr, "These baseline marks have no code in between:\n");
-  mark_label("baseline");
-  mark_label("baseline 2");
-  mark_label("baseline 3");
-  mark_label("baseline 4");
+  timeutil_mark_label("baseline");
+  timeutil_mark_label("baseline 2");
+  timeutil_mark_label("baseline 3");
+  timeutil_mark_label("baseline 4");
 
   if ( spec != NULL )
     {
       ok = "Test!";
-      begin("Parsing spec string");
+      timeutil_begin("Parsing spec string");
       pspec_list = spt_context_parse_specs(spec);
-      end();
+      timeutil_end();
       int size = dllist_size(pspec_list);
       fprintf(stderr, "Found %d parse specs.\n", size);
 
@@ -78,7 +78,7 @@ do_test(const char* spec)
 	dllist_foreach(pspec_list, &_fe_print_pspec, NULL);
     }
 
-  begin("Creating contexts");
+  timeutil_begin("Creating contexts");
   spt_context_t *all, *A, *B, *C, *D, *E, *E2;
   all = spt_context_create(NULL, "all" CONTEXT_DESCRIPTION("Test hidden context"));
   all->flags |= SPT_CONTEXT_HIDE_NAME;
@@ -88,20 +88,20 @@ do_test(const char* spec)
   D = spt_context_create(C, "D"   CONTEXT_DESCRIPTION("Test context D"));
   E = spt_context_create(C, "E"   CONTEXT_DESCRIPTION("Test context E"));
   E2 = spt_context_create(E, "E"   CONTEXT_DESCRIPTION("Test context E (number two)"));
-  end();
+  timeutil_end();
 
   if ( spec != NULL )
     {
-      begin("Applying parse specs");
+      timeutil_begin("Applying parse specs");
       spt_context_apply_parse_specs(all, pspec_list);
-      end();
+      timeutil_end();
     }
 
   /* Should activate all contexts. */
-  if ( !spec )
+  if ( spec == NULL )
     spt_context_enable(A);	/* implicitly enables B, C, D, E */
   else
-    begin_nl("Printing test messages for spec-enabled contexts");
+    timeutil_begin_nl("Printing test messages for spec-enabled contexts");
 
   cmlog(A, V_DEBUG, ok);	/* visible */
   cmlog(B, V_DEBUG, ok);	/* visible */
@@ -109,7 +109,7 @@ do_test(const char* spec)
   cmlog(D, V_DEBUG, ok);	/* visible */
   cmlog(E, V_DEBUG, ok);	/* visible */
   cmlog(E2, V_DEBUG, ok);	/* visible */
-  mark();
+  timeutil_mark();
   if ( !spec )
     {
       /* should deactivate C, D, E */
@@ -120,7 +120,7 @@ do_test(const char* spec)
       cmlog(D, V_DEBUG, err);	/* invisible */
       cmlog(E, V_DEBUG, err);	/* invisible */
       cmlog(E2, V_DEBUG, err);	/* invisible */
-      mark();
+      timeutil_mark();
 
       /* shouldn't do anything (D has never been explicitly set) */
       spt_context_reset(D);
@@ -130,7 +130,7 @@ do_test(const char* spec)
       cmlog(D, V_DEBUG, err);	/* invisible */
       cmlog(E, V_DEBUG, err);	/* invisible */
       cmlog(E2, V_DEBUG, err);	/* invisible */
-      mark();
+      timeutil_mark();
 
       /* should activate D. */
       spt_context_enable(D);
@@ -140,7 +140,7 @@ do_test(const char* spec)
       cmlog(D, V_DEBUG, ok);	/* visible */
       cmlog(E, V_DEBUG, err);	/* invisible */
       cmlog(E2, V_DEBUG, err);	/* invisible */
-      mark();
+      timeutil_mark();
 
       /* should activate C, E  */
       spt_context_reset(C);
@@ -150,7 +150,7 @@ do_test(const char* spec)
       cmlog(D, V_DEBUG, ok);	/* visible */
       cmlog(E, V_DEBUG, ok);	/* visible */
       cmlog(E2, V_DEBUG, ok);	/* visible */
-      mark();
+      timeutil_mark();
 
       /* should deactivate C, E */
       spt_context_disable(C);
@@ -160,16 +160,16 @@ do_test(const char* spec)
       cmlog(D, V_DEBUG, ok);	/* visible */
       cmlog(E, V_DEBUG, err);	/* invisible */
       cmlog(E2, V_DEBUG, ok);	/* visible */
-      mark();
+      timeutil_mark();
     }
-  begin("Destroying contexts");
+  timeutil_begin("Destroying contexts");
   /* Could just destroy A recursively, but this should -- must -- work
    * too.
    */
   spt_context_destroy(A);
   spt_context_destroy(B);
   spt_context_destroy_recursive(C);
-  end();
+  timeutil_end();
 }
 
 int main(int argc, char** argv)
