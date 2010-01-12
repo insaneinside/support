@@ -9,11 +9,14 @@ if(SPT_BUILD_SHARED AND SPT_BUILD_STATIC)
   set(SPT_STATIC_TARGET_SUFFIX "-static")
   set(SPT_SHARED_TARGET_SUFFIX "-shared")
   set(SUPPORT_LIBRARY "support-static") # default to the static library
+  set(SPT_LIBRARY_TARGETS "support-static" "support-shared" PARENT_SCOPE)
 elseif(NOT SPT_BUILD_STATIC AND NOT SPT_BUILD_SHARED)
   # Building nothing?  Yell at the user.
   message(FATAL_ERROR "Neither SPT_BUILD_SHARED nor SPT_BUILD_STATIC is set!")
 else(SPT_BUILD_SHARED AND SPT_BUILD_STATIC)
   # Building only one library.
+  set(SUPPORT_LIBRARY "support")
+  set(SPT_LIBRARY_TARGETS "${SUPPORT_LIBRARY}" PARENT_SCOPE)
   mark_as_advanced(SUPPORT_LIBRARY FORCE)
 endif(SPT_BUILD_SHARED AND SPT_BUILD_STATIC)
 
