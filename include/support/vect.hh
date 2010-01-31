@@ -479,8 +479,8 @@ namespace spt
     }
 
   protected:
-    /* svec_t _M_val; */
-    scalar_t _M_val[3];
+    svec_t _M_val;
+    /* scalar_t _M_val[3]; */
 #ifdef SPT_VECT_CACHE_MAGNITUDE
     scalar_t _M_mag_cached;
     bool _M_recalc_mag;
