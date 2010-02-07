@@ -77,11 +77,22 @@ strchomp(const char* s)
 char*
 strchug(const char* s)
 {
-  char* o = strdup(s);
+  assert(s != NULL);
+  char* o = NULL;
   ssize_t i;
 
   for ( i = (ssize_t) strlen(s) - 1; i >= 0 && isspace(o[i]); i-- )
-    o[i] = '\0';
+    ;
+
+  if ( i > 0 )
+    {
+      o = (char*) malloc((unsigned) i + 2);
+      if ( o != NULL )
+        {
+          o[i] = '\0';
+          memcpy(o, s, (unsigned) i + 1);
+        }
+    }
 
   return o;
 }
