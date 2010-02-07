@@ -1,6 +1,6 @@
 /* -*- Mode: C; fill-column: 70 -*- */
 #ifndef SPT_CONTEXT_H
-#define SPT_CONTEXT_H	1
+#define SPT_CONTEXT_H	1       /** < @internal */
 
 #include <unistd.h>		/* for ssize_t */
 
@@ -25,7 +25,7 @@ extern "C"
 {
 #endif
 
-  /** @ingroup context
+  /** @addtogroup context
    *@{
    */
   /** Opaque object interface to the logging context system.  Use the
@@ -124,7 +124,7 @@ extern "C"
   /* ******************************** */
 
   /**@name Creation/Destruction
-   *
+   * @ingroup context
    * Resource management.
    *
    *@{
@@ -140,8 +140,13 @@ extern "C"
    *
    * @param name Symbolic name for the context.
    *
+   *
+   * @if SPT_CONTEXT_ENABLE_DESCRIPTION
+   *
    * @param description Description of what the logging context is used for.
    * Currently unused (may be @c NULL).
+   *
+   * @endif
    *
    * @return A pointer to the new context, or @c NULL if an error was
    * encountered.
@@ -180,6 +185,7 @@ extern "C"
   /* ******************************** */
 
   /** @name Context hierarchy manipulation
+   *  @ingroup context
    *
    * Contexts can be dynamically reparented.
    *
@@ -207,7 +213,7 @@ extern "C"
   spt_context_clear_parent(spt_context_t* context);
 
 
-  /** Callback (delegate) type used with @link spt_context_each_child. */
+  /** Callback (delegate) type used with spt_context_each_child. */
   typedef uint8_t (spt_context_user_callback_t)(spt_context_t* context, void* userdata);
 
   /** Call a function on each of a context's child nodes.
@@ -230,6 +236,7 @@ extern "C"
   /* ******************************** */
 
   /** @name Activation
+   *  @ingroup context
    *
    * Use these functions to explicitly enable or disable a context, or
    * reset it to its inherited state.
@@ -272,17 +279,17 @@ extern "C"
    * @param __ispec A string specifying the contexts to enable or
    * disable. In <a href="http://www.rfc-editor.org/std/std68.txt">ABNF</a>
    * notation:
-   * <code>
-   * spec		= single_spec *(","  single_spec)
-   *
-   * single_spec	= state_flag identifier ; Enable or disable a single context.
-   *
-   * state_flag		= "+" / "-"
-   *
-   * identifier		= context_name *("." context_name)
-   *
-   * context_name	= &lt;any CHAR excluding "." and ","&gt;
-   * </code>
+   * @verbatim
+spec		= single_spec *(","  single_spec)
+
+single-spec	= state-flag identifier ; Enables or disables a single context.
+
+state-flag	= "+" / "-"
+
+identifier	= context-name *("." context-name)
+
+context-name	= <any CHAR excluding "." and ",">
+   * @endverbatim
    *
    * To enable a single context: <code>+context_name</code>
    *
