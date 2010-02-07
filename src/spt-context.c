@@ -67,10 +67,10 @@ spt_context_each_child(const spt_context_t* context,
       while ( next )
 	{
           node = next;
-	  callback(node, userdata);
-
-          times_called++;
 	  next = node->next_sibling;
+
+          callback(node, userdata);
+          times_called++;
 	}
     }
 
