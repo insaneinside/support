@@ -2,6 +2,10 @@ project(Support)
 cmake_minimum_required(VERSION 2.4 FATAL_ERROR)
 mark_as_advanced(FORCE CMAKE_BACKWARDS_COMPATIBILITY)
 
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
 list(APPEND CMAKE_MODULE_PATH "${Support_SOURCE_DIR}/cmake")
 ################################################################
 # CPack
