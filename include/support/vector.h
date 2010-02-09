@@ -26,7 +26,7 @@ extern "C" {
 #ifdef __cplusplus
 #define SV_STR(v)	svec2str(v, SV_STRBUFSIZ, static_cast<char*>(alloca(SV_STRBUFSIZ)), NULL)
 #else
-#define SV_STR(v)	vec_simple_str(v, (char *) alloca(SV_STRBUFSIZ), NULL)
+#define SV_STR(v)	svec2str(v, SV_STRBUFSIZ, (char*) alloca(SV_STRBUFSIZ), NULL)
 #endif
 
 #define SV_DOTP(u, v)	( u[0] * v[0] + u[1] * v[1] + u[2] * v[2] )
