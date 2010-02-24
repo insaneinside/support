@@ -194,7 +194,7 @@ spt_context_parse_specs(const char* __ispec)
     return NULL;
 
   size_t count = 0;
-  char* spec = strdup(__ispec);
+  char* spec = strdupa(__ispec);
   const size_t len = strlen(spec);
   if ( len < 2 )
     return NULL;
@@ -223,6 +223,7 @@ spt_context_parse_specs(const char* __ispec)
 	}
       sp = sg_spec_end + 1;
     }
+
   return out;
 }
 
