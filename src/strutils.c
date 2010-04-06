@@ -81,7 +81,7 @@ strchug(const char* s)
   char* o = NULL;
   ssize_t i;
 
-  for ( i = (ssize_t) strlen(s) - 1; i >= 0 && isspace(o[i]); i-- )
+  for ( i = (ssize_t) strlen(s) - 1; i >= 0 && isspace(s[i]); i-- )
     ;
 
   if ( i > 0 )
