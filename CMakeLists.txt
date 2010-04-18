@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.4 FATAL_ERROR)
 mark_as_advanced(FORCE CMAKE_BACKWARDS_COMPATIBILITY)
 
 if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0002 NEW)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
@@ -29,6 +30,7 @@ option_maybe(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors
 option_maybe(SPT_ENABLE_CONSISTENCY_CHECKS "Enable run-time consistency checks" ON)
 option_maybe(SPT_CONTEXT_ENABLE_DESCRIPTION "Enable context descriptions" OFF)
 set(SPT_DEFAULT_SCALAR_TYPE "float" CACHE STRING "Default type for scalar values: one of \"float\", \"double\", or \"long double\".")
+option_maybe(SPT_INSTALL "Install the Support library and headers." ON)
 
 # Build components
 option_maybe(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
@@ -89,10 +91,13 @@ set(SUPPORT_INCLUDE_DIRS
   )
 include_directories(${SUPPORT_INCLUDE_DIRS})
 
-install(DIRECTORY
-  "${Support_SOURCE_DIR}/include/support"
-  "${Support_BINARY_DIR}/include/support"
-  DESTINATION include)
+
+if(SPT_INSTALL)
+  install(DIRECTORY
+    "${Support_SOURCE_DIR}/include/support"
+    "${Support_BINARY_DIR}/include/support"
+    DESTINATION include)
+endif(SPT_INSTALL)
 #
 ################################################################
 
