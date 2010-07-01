@@ -32,7 +32,12 @@ enum spt_context_flags
     /** If set, the name of a context and any parent context(s) will
      * be hidden when messages are logged to that context.
      */
-    SPT_CONTEXT_HIDE_NAME = 1 << 3
+    SPT_CONTEXT_HIDE_NAME = 1 << 3,
+
+    /** If set, a context will not be enabled through implicit
+     *	state-inheritance.
+     */
+    SPT_CONTEXT_NO_IMPLICIT_STATE = 1 << 4
 };
 
   /** @internal */

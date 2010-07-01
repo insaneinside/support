@@ -421,7 +421,7 @@ _fe_inherit_state(spt_context_t* context,
 static void
 context_inherit_state(spt_context_t* context)
 {
-  if ( context->parent )
+  if ( context->parent && ! (context->flags & SPT_CONTEXT_NO_IMPLICIT_STATE ))
     {
       context->flags &= ~SPT_CONTEXT_POLICY; /* set implicit policy */
 
