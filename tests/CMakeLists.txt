@@ -12,5 +12,6 @@ endif(SPT_ENABLE_LOG_CONTEXT)
 
 add_executable(dllist-test dllist-test.c)
 
+add_executable(strutils-test strutils-test.c)
 #add_executable(matrix-test matrix-test.cc)
 #add_executable(meta-test meta-test.c)
