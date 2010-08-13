@@ -20,7 +20,7 @@ extern "C"
 #define TIMEUTIL_ONE_MILLION 1000000
 
 /** Elapsed time, in microseconds. */
-__inline__ timeutil_time_value_type
+__inline__ timeutil_time_value_type __attribute__ (( __always_inline__  ))
 timeutil_elapsed(struct timeval* t1, struct timeval* t2)
 {
   return TIMEUTIL_ONE_MILLION * ( t2->tv_sec - t1->tv_sec )
@@ -37,6 +37,7 @@ timeutil_elapsed(struct timeval* t1, struct timeval* t2)
 #define macro_single_statement(x) do { x; } while ( 0 )
 
 #define timeutil_init_mark_variables()                          \
+  int timeutil_lhnl = 1;					\
   struct ntptimeval timeutil_te_a;				\
   struct ntptimeval timeutil_te_b;                              \
   memset(&timeutil_te_a, 0, sizeof(struct ntptimeval));         \
@@ -84,6 +85,7 @@ timeutil_elapsed(struct timeval* t1, struct timeval* t2)
  */
 #define timeutil_mark_label(s)                                          \
   macro_single_statement(						\
+  timeutil_lhnl = 1;							\
   timeutil_update_time_value();						\
   if ( timeutil_prev_te->time.tv_sec != 0 )                             \
     fprintf(stderr, "-- MARK%s%s ("timeutil_time_value_format" elapsed)\n", \
@@ -101,17 +103,20 @@ timeutil_elapsed(struct timeval* t1, struct timeval* t2)
 
 #define timeutil_begin(label)						\
   macro_single_statement(						\
+  timeutil_lhnl = 0;							\
   fprintf(stderr, "-- %s... ", label);					\
   timeutil_update_time_value(); timeutil_update_last_time_value(); )
 
 #define timeutil_beginf(fmt, ...)			\
   macro_single_statement(                               \
+  timeutil_lhnl = 0;							\
   fprintf(stderr, "-- "fmt"... ", __VA_ARGS__);		\
   timeutil_update_time_value(); timeutil_update_last_time_value(); )
 
 
 #define timeutil_begin_nl(label)                                        \
   macro_single_statement(						\
+  timeutil_lhnl = 1;							\
   fprintf(stderr, "-- %s\n", label);					\
   timeutil_update_time_value(); timeutil_update_last_time_value(); )
 
@@ -119,10 +124,12 @@ timeutil_elapsed(struct timeval* t1, struct timeval* t2)
 #define timeutil_end_label(s)                                           \
   macro_single_statement(						\
   timeutil_update_time_value();						\
-  fprintf(stderr, "%s: "timeutil_time_value_format" elapsed\n",         \
+  fprintf(stderr, "%s%s: "timeutil_time_value_format" elapsed\n",	\
+	  timeutil_lhnl ? "-- " : "",					\
 	  s ? s : "done",						\
 	  timeutil_time_elapsed_value,                                  \
-	  timeutil_is_singular(timeutil_time_elapsed_value) ? "" : "s"); )
+	  timeutil_is_singular(timeutil_time_elapsed_value) ? "" : "s"); \
+  timeutil_lhnl = 1; )
 
 #define timeutil_endf(fmt, ...)                                         \
   macro_single_statement(						\
@@ -130,7 +137,9 @@ timeutil_elapsed(struct timeval* t1, struct timeval* t2)
   fprintf(stderr, fmt": "timeutil_time_value_format" elapsed\n",        \
 	  __VA_ARGS__,							\
 	  timeutil_time_elapsed_value,                                  \
-	  timeutil_is_singular(timeutil_time_elapsed_value) ? "" : "s"); )
+	  timeutil_is_singular(timeutil_time_elapsed_value) ? "" : "s"); \
+  timeutil_lhnl = 1; )
+
 
 #define timeutil_end() timeutil_end_label(NULL)
 
