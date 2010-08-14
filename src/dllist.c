@@ -468,3 +468,17 @@ dllist_append_node(dllist_t* list, dllist_t* node)
   else
     return node;
 }
+
+dllist_t*
+dllist_append_list(dllist_t* list, dllist_t* second)
+{
+  if ( list )
+    {
+      dllist_t* last = dllist_last(list);
+      last->next = second;
+      second->prev = last;
+      return list;
+    }
+  else
+    return second;
+}

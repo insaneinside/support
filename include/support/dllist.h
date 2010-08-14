@@ -79,6 +79,11 @@ extern "C"
    */
   dllist_t* dllist_append_node(dllist_t* list, dllist_t* node);
 
+  /** Append another list to the end of the list.
+   */
+  dllist_t* dllist_append_list(dllist_t* list, dllist_t* second);
+
+
   /** prepend data to the start of list.
    */
   dllist_t* dllist_prepend(dllist_t* list, void* data);
