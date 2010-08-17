@@ -21,7 +21,6 @@ else(SPT_BUILD_SHARED AND SPT_BUILD_STATIC)
 endif(SPT_BUILD_SHARED AND SPT_BUILD_STATIC)
 
 set(support_SOURCES
-  ref.cc
   dllist.c
   hash_table.c
   mlog.c
