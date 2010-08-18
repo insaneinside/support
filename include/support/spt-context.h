@@ -184,13 +184,39 @@ extern "C"
 
   /* ******************************** */
 
-  /** @name Context hierarchy manipulation
+  /** @name Context hierarchy manipulation and interrogation
    *  @ingroup context
    *
    * Contexts can be dynamically reparented.
    *
    *@{
    */
+
+  /** Get the number of direct ancestors of a context.
+   *
+   * @param context Context for which to count children.
+   *
+   * @return Number of child contexts in the child-list of @p context.
+   *
+   * @see spt_context_get_num_ancestors
+   */
+  size_t
+  spt_context_get_num_children(spt_context_t* context);
+
+
+  /** Get the number of ancestors, both direct and indirect, of a
+   * context.
+   *
+   * @param context Context for which to count the number of
+   *   ancestors.
+   *
+   * @return Number of sub-contexts under @p context.
+   *
+   * @see spt_context_get_num_children
+   */
+  size_t
+  spt_context_get_num_ancestors(spt_context_t* context);
+
 
   /** Reparent a context.  If it currently has a parent set, the
    *  parent and sibling links will be cleared first.

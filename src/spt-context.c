@@ -85,6 +85,7 @@ spt_context_each_child(const spt_context_t* context,
  *
  * @internal
  */
+__attribute__ (( __always_inline__ ))
 __inline__ void
 context_append_child(spt_context_t* cxt, spt_context_t* child)
 {
@@ -114,6 +115,7 @@ context_append_child(spt_context_t* cxt, spt_context_t* child)
  *
  * @internal
  */
+__attribute__ (( __always_inline__ ))
 __inline__ uint8_t
 context_unlink_parent_and_siblings(spt_context_t* cxt)
 {
@@ -132,6 +134,7 @@ context_unlink_parent_and_siblings(spt_context_t* cxt)
  *
  * @internal
  */
+__attribute__ (( __always_inline__ ))
 __inline__ uint8_t
 context_remove_child(spt_context_t* cxt, spt_context_t* child)
 {
@@ -265,6 +268,12 @@ _fe_unparent_context(spt_context_t* cxt,
   return 1;
 }
 
+/** Assign the value of pointer @p source to pointer @p dest; advance
+ *  @p source by @p size bytes and decrement @p size_counter by @p
+ *  size.
+ *
+ * @internal
+ */
 #define assign_and_advance(dest,type,size,source,size_counter)	\
   dest = (type *) source;					\
   source += (ptrdiff_t) size;                                   \
@@ -351,6 +360,7 @@ spt_context_create(spt_context_t* parent,
   if ( parent )
     {
       context_append_child(parent, cxt);
+      assert(SPT_CONTEXT_HAS_CHILDREN(parent));
       spt_context_reset(cxt);
     }
 
@@ -369,7 +379,7 @@ spt_context_destroy(spt_context_t* context)
   if ( SPT_CONTEXT_HAS_CHILDREN(context) )
     spt_context_each_child(context, &_fe_unparent_context, NULL);
 
-  if ( context->parent )
+  if ( SPT_IS_CONTEXT(context->parent) )
     {
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
       assert( SPT_CONTEXT_HAS_CHILDREN(context->parent) );
@@ -392,6 +402,36 @@ spt_context_destroy_recursive(spt_context_t* context)
     }
 
   context_destroy_single(context);
+}
+
+/** Helper for spt_context_get_num_ancestors. */
+static uint8_t
+_fe_count_ancestors(spt_context_t* context, void* userdata)
+{
+  *((size_t*) userdata) += spt_context_get_num_children(context);
+  spt_context_each_child(context, &_fe_count_ancestors, userdata);
+  return 1;
+}
+
+size_t
+spt_context_get_num_children(spt_context_t* context)
+{
+  size_t count = 0;
+  spt_context_t* child = context->first_child;
+  while ( child )
+    {
+      count++;
+      child = child->next_sibling;
+    }
+  return count;
+}
+
+size_t
+spt_context_get_num_ancestors(spt_context_t* context)
+{
+  size_t n = spt_context_get_num_children(context);
+  spt_context_each_child(context, &_fe_count_ancestors, &n);
+  return n;
 }
 
 /* ----------------------------------------------------------------
@@ -423,12 +463,12 @@ context_inherit_state(spt_context_t* context)
 {
   if ( context->parent && ! (context->flags & SPT_CONTEXT_NO_IMPLICIT_STATE ))
     {
-      context->flags &= ~SPT_CONTEXT_POLICY; /* set implicit policy */
+      context->flags &= (unsigned) ~SPT_CONTEXT_POLICY; /* set implicit policy */
 
       if ( spt_context_active(context->parent) )
 	context->flags |= SPT_CONTEXT_IMPLICIT_STATE;
       else
-	context->flags &= ~SPT_CONTEXT_IMPLICIT_STATE;
+	context->flags &= (unsigned) ~SPT_CONTEXT_IMPLICIT_STATE;
     }
 
   if ( SPT_CONTEXT_HAS_CHILDREN(context) )
@@ -452,7 +492,7 @@ void
 spt_context_disable(spt_context_t* context)
 {
   context->flags |= SPT_CONTEXT_POLICY; /* set policy explicit */
-  context->flags &= ~SPT_CONTEXT_EXPLICIT_STATE; /* disable */
+  context->flags &= (unsigned) ~SPT_CONTEXT_EXPLICIT_STATE; /* disable */
 
   /* Update child contexts */
   if ( SPT_CONTEXT_HAS_CHILDREN(context) )
@@ -464,7 +504,7 @@ void
 spt_context_reset(spt_context_t* context)
 {
   /* Unset policy bit (set to implicit)   */
-  context->flags &= ~SPT_CONTEXT_POLICY;
+  context->flags &= (unsigned) ~SPT_CONTEXT_POLICY;
 
   /* Refresh the inherited state  */
   context_inherit_state(context);
