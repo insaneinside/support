@@ -59,10 +59,19 @@ extern "C" {
 
   #define S_POW(a, b) 	powf(a, b)
   #define S_FMOD(a,b)	fmodf(a,b)
-  #define S_LOG(n)	logf(n)
-  #define S_EXP(n)	expf(n)
 
-  #define S_SIN(n)	sinf(n)
+  #define S_LOG(n)	logf(n)
+  #define S_LOG2(n)     log2f(n)
+  #define S_LOG10(n)    log10f(n)
+
+  #define S_EXP(n)      expf(n)
+  #define S_EXP2(n)     exp2f(n)
+  #define S_EXP10(n)    exp10f(n)
+
+  #define S_LOGB(n)     logbf(n)
+  #define S_ILOGB(n)    ilogbf(n)
+
+  #define S_SIN(n)      sinf(n)
   #define S_COS(n)	cosf(n)
   #define S_TAN(n)	tanf(n)
   #define S_ASIN(n)	asinf(n)
@@ -84,8 +93,17 @@ extern "C" {
 
   #define S_POW(a, b) 	pow(a, b)
   #define S_FMOD(a,b)	fmod(a,b)
+
   #define S_LOG(n)	log(n)
+  #define S_LOG2(n)     log2(n)
+  #define S_LOG10(n)    log10(n)
+
   #define S_EXP(n)	exp(n)
+  #define S_EXP2(n)     exp2(n)
+  #define S_EXP10(n)    exp10(n)
+
+  #define S_LOGB(n)     logb(n)
+  #define S_ILOGB(n)    ilogb(n)
 
   #define S_SIN(n)	sin(n)
   #define S_COS(n)	cos(n)
@@ -109,8 +127,17 @@ extern "C" {
 
   #define S_POW(a, b) 	powl(a, b)
   #define S_FMOD(a,b)	fmodl(a,b)
-  #define S_LOG(n)	logl(n)
+
   #define S_EXP(n)	expl(n)
+  #define S_EXP2(n)     exp2l(n)
+  #define S_EXP10(n)    exp10l(n)
+
+  #define S_LOG(n)	logl(n)
+  #define S_LOG2(n)     log2l(n)
+  #define S_LOG10(n)    log10l(n)
+
+  #define S_LOGB(n)     logbl(n)
+  #define S_ILOGB(n)    ilogbl(n)
 
   #define S_SIN(n)	sinl(n)
   #define S_COS(n)	cosl(n)
