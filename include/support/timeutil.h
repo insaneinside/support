@@ -14,7 +14,7 @@ extern "C"
 {
 #endif
 
-#define timeutil_time_value_type long long int
+#define timeutil_time_value_type long int
 
 /* Let's write it once and not lose a zero somewhere */
 #define TIMEUTIL_ONE_MILLION 1000000
@@ -31,7 +31,7 @@ timeutil_elapsed(struct timeval* t1, struct timeval* t2)
 #define timeutil_time_value timeutil_te.time.tv_usec
 #define timeutil_time_elapsed_value                                     \
   timeutil_elapsed(&(timeutil_prev_te->time), &(timeutil_next_te->time))
-#define timeutil_time_value_format "%lld microsecond%s"
+#define timeutil_time_value_format "%ld microsecond%s"
 #define timeutil_is_singular(v) (v == 1)
 
 #define macro_single_statement(x) do { x; } while ( 0 )
