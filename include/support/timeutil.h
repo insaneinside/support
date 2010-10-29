@@ -36,13 +36,13 @@ timeutil_elapsed(struct timeval* t1, struct timeval* t2)
 
 #define macro_single_statement(x) do { x; } while ( 0 )
 
-#define timeutil_init_mark_variables()                          \
-  int timeutil_lhnl = 1;					\
-  struct ntptimeval timeutil_te_a;				\
-  struct ntptimeval timeutil_te_b;                              \
-  memset(&timeutil_te_a, 0, sizeof(struct ntptimeval));         \
-  memset(&timeutil_te_b, 0, sizeof(struct ntptimeval));         \
-  struct ntptimeval* timeutil_next_te = &timeutil_te_a;         \
+#define timeutil_init_mark_variables()                           \
+  int timeutil_lhnl = 1;                                         \
+  struct ntptimeval timeutil_te_a = { { 0, 0}, 0, 0 };           \
+  struct ntptimeval timeutil_te_b = { { 0, 0}, 0, 0 };           \
+  memset(&timeutil_te_a, 0, sizeof(struct ntptimeval));          \
+  memset(&timeutil_te_b, 0, sizeof(struct ntptimeval));          \
+  struct ntptimeval* timeutil_next_te = &timeutil_te_a;          \
   struct ntptimeval* timeutil_prev_te = &timeutil_te_b
 
 #define timeutil_update_time_value()                                    \
