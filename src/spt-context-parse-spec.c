@@ -25,7 +25,7 @@ _fe_context_apply_single_spec(spt_context_t* context, void* udata);
 /* ****************************************************************
  * Utility functions
  */
-
+/* _apply_pspec could be inline, but references static function _fe_context_apply_single_spec. */
 static int
 _apply_pspec(const spt_context_parse_spec_t* ps, spt_context_t* cxt)
 {
@@ -65,6 +65,7 @@ _apply_pspec(const spt_context_parse_spec_t* ps, spt_context_t* cxt)
   source += (ptrdiff_t) size;					\
   size_counter -= size
 
+__attribute__ (( __always_inline__ ))
 __inline__ spt_context_parse_spec_t*
 _parse_single_spec(const char* _spec, const size_t _length)
 {
