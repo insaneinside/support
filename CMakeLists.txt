@@ -30,7 +30,7 @@ option_maybe(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors
 option_maybe(SPT_ENABLE_CONSISTENCY_CHECKS "Enable run-time consistency checks" ON)
 option_maybe(SPT_CONTEXT_ENABLE_DESCRIPTION "Enable context descriptions" OFF)
 set(SPT_DEFAULT_SCALAR_TYPE "float" CACHE STRING "Default type for scalar values: one of \"float\", \"double\", or \"long double\".")
-option_maybe(SPT_INSTALL "Install the Support library and headers." ON)
+option_maybe(SPT_INSTALL "Install the Support library and headers." OFF)
 
 # Build components
 option_maybe(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
@@ -106,6 +106,7 @@ set(SPT_WARN_FLAGS
   -Wconversion
   -Wextra
   -Wfloat-equal
+  -Winline
   -Wno-long-long
   -Wno-variadic-macros
   -Wpointer-arith
@@ -135,6 +136,7 @@ append_flags(CMAKE_CXX_FLAGS ${SPT_WARN_FLAGS})
 add_subdirectory(src)
 
 if("${CMAKE_HOME_DIRECTORY}" STREQUAL "${Support_SOURCE_DIR}")
+  set(SPT_INSTALL ON)
   set(BUILD_TESTING 1)
   add_subdirectory(tests)
 endif("${CMAKE_HOME_DIRECTORY}" STREQUAL "${Support_SOURCE_DIR}")
