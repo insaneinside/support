@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include <support/spt-context.h>
-#include "timeutil.h"
+#include <support/timeutil.h>
 
 #ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
 #define CONTEXT_DESCRIPTION(d) , d
@@ -22,7 +22,7 @@ _print_pspec(const spt_context_parse_spec_t* ps)
   assert(SPT_IS_CONTEXT_PARSE_SPEC(ps));
 #endif
 
-  printf("spec %p (%u): %s",
+  printf("spec %p (%zu): %s",
 	 (void*) ps,
 	 ps->name_array_length,
 	 ps->flags & SPT_CONTEXT_EXPLICIT_STATE ? "+" : "-"
@@ -90,18 +90,27 @@ do_test(const char* spec)
   E2 = spt_context_create(E, "E"   CONTEXT_DESCRIPTION("Test context E (number two)"));
   timeutil_end();
 
+  assert(spt_context_get_num_ancestors(all) == 6);
+  assert(spt_context_get_num_ancestors(A) == 5);
+  assert(spt_context_get_num_ancestors(B) == 0);
+  assert(spt_context_get_num_ancestors(C) == 3);
+  assert(spt_context_get_num_ancestors(D) == 0);
+  assert(spt_context_get_num_ancestors(E) == 1);
+  assert(spt_context_get_num_ancestors(E2) == 0);
+
   if ( spec != NULL )
     {
       timeutil_begin("Applying parse specs");
       spt_context_apply_parse_specs(all, pspec_list);
       timeutil_end();
+      spt_context_parse_spec_destroy_list(pspec_list);
     }
 
   /* Should activate all contexts. */
   if ( spec == NULL )
     spt_context_enable(A);	/* implicitly enables B, C, D, E */
   else
-    timeutil_begin_nl("Printing test messages for spec-enabled contexts");
+    timeutil_begin_nl("Printing test messages for spec-enabled contexts...");
 
   cmlog(A, V_DEBUG, ok);	/* visible */
   cmlog(B, V_DEBUG, ok);	/* visible */
@@ -109,7 +118,7 @@ do_test(const char* spec)
   cmlog(D, V_DEBUG, ok);	/* visible */
   cmlog(E, V_DEBUG, ok);	/* visible */
   cmlog(E2, V_DEBUG, ok);	/* visible */
-  timeutil_mark();
+  timeutil_end_label("-- ...done");
   if ( !spec )
     {
       /* should deactivate C, D, E */
@@ -163,12 +172,7 @@ do_test(const char* spec)
       timeutil_mark();
     }
   timeutil_begin("Destroying contexts");
-  /* Could just destroy A recursively, but this should -- must -- work
-   * too.
-   */
-  spt_context_destroy(A);
-  spt_context_destroy(B);
-  spt_context_destroy_recursive(C);
+  spt_context_destroy_recursive(all);
   timeutil_end();
 }
 
