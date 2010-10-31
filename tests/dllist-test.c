@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include <support/dllist.h>
-#include "timeutil.h"
+#include <support/timeutil.h>
 
 #define NTESTSTRINGS 10
 #define WORDLIST "/home/collin/.wordlists/2of12.txt"
@@ -108,7 +108,7 @@ main(int argc, char** argv)
   ssize_t sl;
   size_t n;
   dllist_t* list;
-  unsigned int nteststrings = NTESTSTRINGS;
+  long unsigned int nteststrings = NTESTSTRINGS;
 
   if ( argc > 1 )
     {
@@ -126,7 +126,7 @@ main(int argc, char** argv)
   srand((unsigned int) time(NULL));
 
   /* Grab some words at random for testing */
-  fprintf(stderr, "Retrieving %d words from \"%s\" for use as test strings\n", nteststrings, WORDLIST);
+  fprintf(stderr, "Retrieving %lu words from \"%s\" for use as test strings\n", nteststrings, WORDLIST);
   str = (char**) malloc(sizeof(char*) * nteststrings);
   fp = fopen(WORDLIST, "r");
   if ( !fp )
