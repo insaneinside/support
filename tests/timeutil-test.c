@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "timeutil.h"
+#include <support/timeutil.h>
 #include <support/scalar.h>
 
 /** Fill time by doing some expensive calculations.
