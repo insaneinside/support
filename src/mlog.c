@@ -14,7 +14,7 @@
 #endif
 
 #define LEVEL(spec)	(spec & MLOG_LOGLEVEL_MASK )
-#define FLAGS(spec)	(spec & (~MLOG_LOGLEVEL_MASK))
+#define FLAGS(spec)	(spec & ((unsigned) ~MLOG_LOGLEVEL_MASK))
 
 
 /* Local variables follow.
