@@ -51,6 +51,7 @@ extern "C" {
   #define S_TYPE 	float
 
     /* Functions */
+  #define S_HYPOT(x,y)	hypotf(x,y)
   #define S_SQRT(n) 	sqrtf(n)
   #define S_ABS(n) 	fabsf(n)
 
@@ -85,6 +86,7 @@ extern "C" {
 
   #define S_TYPE 	double
 
+  #define S_HYPOT(x,y)	hypot(x,y)
   #define S_SQRT(n)	sqrt(n)
   #define S_ABS(n) 	fabs(n)
 
@@ -119,6 +121,7 @@ extern "C" {
 
   #define S_TYPE 	long double
 
+  #define S_HYPOT(x,y)	hypotl(x,y)
   #define S_SQRT(n)	sqrtl(n)
   #define S_ABS(n) 	fabsl(n)
 
