@@ -118,7 +118,7 @@ do_test(const char* spec)
   cmlog(D, V_DEBUG, ok);	/* visible */
   cmlog(E, V_DEBUG, ok);	/* visible */
   cmlog(E2, V_DEBUG, ok);	/* visible */
-  timeutil_end_label("-- ...done");
+  timeutil_end();
   if ( !spec )
     {
       /* should deactivate C, D, E */

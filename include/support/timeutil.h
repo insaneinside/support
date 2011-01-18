@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <limits.h>
 #include <string.h>
-
+#include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -139,7 +140,7 @@ timeutil_elapsed(struct timeval* t1, struct timeval* t2)
 	  s ? s : "done",						\
 	  timeutil_time_elapsed_value,                                  \
 	  timeutil_is_singular(timeutil_time_elapsed_value) ? "" : "s"); \
-  timeutil_data_instance.lhnl = 1;\
+  timeutil_data_instance.lhnl = 1;					\
                                                                         )
 
 #define timeutil_endf(fmt, ...)                                         \
