@@ -5,7 +5,7 @@
 #include <support/scalar.h>
 #include <support/macro.h>
 #include <support/strutils.h>
-
+#include <support/vector.h>
 
 #ifndef __cplusplus
 #error this is a c++ header file.
