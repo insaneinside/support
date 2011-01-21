@@ -151,9 +151,7 @@ extern "C" {
 
 #else
 
-  //#ifndef MAKEDEPEND
 #error One of S_TYPE_FLOAT, S_TYPE_DOUBLE or S_TYPE_LONG_DOUBLE must be defined!
-//#endif
 
 #endif /* S_TYPE */
 
