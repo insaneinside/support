@@ -27,6 +27,7 @@ set(support_SOURCES
   strutils.c
   vector.c
   matrix.c
+  readFileIntoString.cc
   )
 
 if(SPT_ENABLE_LOG_CONTEXT)
