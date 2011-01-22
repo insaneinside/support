@@ -99,11 +99,11 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#include <support/vect.hh>
+#include <support/Vector.hh>
 
-#define V_TYPE		iray::Vector
-#define V_NAMED(n)	iray::Vector n
-#define V_INIT(n, args)	iray::Vector n(args)
+#define V_TYPE		spt::Vector
+#define V_NAMED(n)	spt::Vector n
+#define V_INIT(n, args)	spt::Vector n(args)
 #define V_NEW(x,y,z)	V_TYPE(x, y, z)
 
 #define V_MAG(v)	v.mag()
