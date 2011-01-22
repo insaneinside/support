@@ -23,9 +23,6 @@
 
 namespace spt
 {
-#define vpos_t Vector		//typedef Vector vpos_t;
-#define vdir_t Vector		//typedef Vector vdir_t;
-#define vec_t Vector
   class Vector
   {
   public:
