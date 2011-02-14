@@ -374,6 +374,11 @@ public:
 
   /** Collation-order comparator method.  This allows String to be
    *  used inside of STL containers.
+   *
+   * @param s Another String against which the current object is to be compared.
+   *
+   * @return @c true if <code>*this</code> sorts before @c s in the
+   * current locale.
    */
   inline bool
   operator < (const String& s) const
@@ -397,6 +402,8 @@ private:
 
 #include <ostream>
 
+/**  Shift-append operator for output of a String to an STL stream.
+ */
 inline std::basic_ostream<char>&
 operator << (std::basic_ostream<char>& os, const String& s)
 {
