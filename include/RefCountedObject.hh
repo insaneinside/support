@@ -1,5 +1,7 @@
 /**@file
- *Reference-counted object class and supporting functions.
+ * 
+ * Reference-counted object class and supporting structures and
+ * functions for use with boost::intrusive_ptr.
  *
  */
 #ifndef RefCountedObject_hh
@@ -7,6 +9,7 @@
 
 #include <stdexcept>
 #include <cstdint>
+
 
 /** Base class with reference counter, for use with intrusive pointer
  *  types.  Functions for use with boost::intrusive_ptr are included.
@@ -17,7 +20,7 @@
  * intrusive pointer type is only necessary when storing, as opposed to using,
  * <code>%RefCountedObject</code>-derived objects.
  *
- * @sa intrusive_ptr_add_ref, intrusive_ptr_release
+ * @sa RefTraits, intrusive_ptr_add_ref, intrusive_ptr_release
  */
 struct RefCountedObject
 {
@@ -51,8 +54,6 @@ struct RefCountedObject
 inline void
 intrusive_ptr_add_ref(RefCountedObject* __rco)
 {
-  /* assert(__rco != NULL);
-   * assert(__rco->refCount >= 0); */
   __rco->refCount++;
 }
 
@@ -65,8 +66,6 @@ intrusive_ptr_add_ref(RefCountedObject* __rco)
 inline void
 intrusive_ptr_release(RefCountedObject* __rco)
 {
-  /* assert(__rco != NULL); */
-  /* assert(__rco->refCount > 0); */ // <= not needed?
   __rco->refCount--;
 
   if ( __rco->refCount == 0 )
@@ -75,25 +74,24 @@ intrusive_ptr_release(RefCountedObject* __rco)
 
 #include <boost/intrusive_ptr.hpp>
 
-/** Quick-n-dirty alias for boost::intrusive_ptr, in lieu of GCC's eventual
- *  implementation of C++0x template aliases.
- *
- * @todo Using #defines for aliasing symbols isn't a very good idea in C++,
- * since it fscks up namespacing scoping just about everywhere.  Is there a
- * better way to fake this?
+
+/** Object-reference type-traits struct.  This is used to hide the
+ * specific types used for referencing objects from the object
+ * implementations.
  */
-#define Ref boost::intrusive_ptr
+template < typename _T >
+struct RefTraits
+{
+  /** Type used when storing a reference to an object.  We use a
+   *  tracked-pointer because stored references are not   */
+  typedef boost::intrusive_ptr<_T> stored_ref;
+  typedef const boost::intrusive_ptr<_T> const_stored_ref;
 
-/* template < typename _T >
- * class Ref
- *   : public boost::intrusive_ptr<_T>
- * {
- * public:
- *   inline Ref(_T* __ptr)
- *     : boost::intrusive_ptr<_T>::intrusive_ptr(__ptr)
- *   {
- *   }
- *   
- * }; */
+  /** Type used when passing or using -- but not storing -- node
+   *  references.
+   */
+  typedef _T* passed_ref;
+  typedef const _T* const_passed_ref;
+};
 
-#endif	/* RefCountedObject_hh */
+#endif	/* ! defined(RefCountedObject_hh) */

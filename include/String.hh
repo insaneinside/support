@@ -20,7 +20,7 @@ struct StringData
 {
   typedef _T element_type;
   typedef size_t size_type;
-  typedef Ref< StringData<_T,_U> > reference_type;
+  typedef boost::intrusive_ptr< StringData<_T,_U> > reference_type;
   typedef void (*FreeFunction) (_U*);
 
   /** Pointer to first byte of data buffer. */
@@ -121,8 +121,8 @@ public:
   typedef const element_type* const_needle_type;
   typedef StringData<element_type,void> data_type;
 
-  typedef Ref<String> reference_type;
-  typedef Ref<String> const const_reference_type;
+  typedef boost::intrusive_ptr<String> reference_type;
+  typedef boost::intrusive_ptr<String> const const_reference_type;
 
   /** a la std::string::npos */
   static const size_type npos = static_cast<size_type>(-1);
@@ -130,7 +130,7 @@ public:
   typedef StringRange<size_type, npos> range_type;
 
 
-  inline String(const Ref<data_type>& sdata, const range_type& range)
+  inline String(const data_type::reference_type& sdata, const range_type& range)
     : RefCountedObject ( ),
       m_sdata ( sdata ),
       m_range ( range )
@@ -334,7 +334,7 @@ public:
   inline
   String operator + (const String& s) const
   {
-    Ref<data_type> sdata ( new data_type(this->length() + s.length() + 1) );
+    data_type::reference_type sdata ( new data_type(this->length() + s.length() + 1) );
     memcpy(stpncpy(sdata->data, this->m_sdata->data + m_range.startIndex, this->length()),
 	   s.m_sdata->data + s.m_range.startIndex, s.length());
     return String(sdata, range_type(0, sdata->capacity - 1));
@@ -396,7 +396,7 @@ public:
   }
 
 private:
-  Ref< data_type >   m_sdata;
+  data_type::reference_type m_sdata;
   range_type m_range;
 };
 
