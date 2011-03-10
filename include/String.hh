@@ -13,7 +13,12 @@
 #include <RefCountedObject.hh>
 
 /** String-data management helper.  The StringData structure stores
-    string data independently of its access  */
+ *  string data independently of its access semantics.
+ *
+ * @param _T Element (character) type.
+ *
+ * @param _U Type used by data-free function (e.g., void -> free(void*)).
+ */
 template < typename _T, typename _U = _T >
 struct StringData
   : RefCountedObject
@@ -48,10 +53,10 @@ struct StringData
     __sd.ownsData = false;
   }
 
-  explicit inline StringData(const element_type* s)
+  explicit inline StringData(const element_type* s, size_type knownCapacity = 0)
     : RefCountedObject ( ),
       data ( const_cast<element_type*>(s) ),
-      capacity ( s == NULL ? 0 : strlen(s) ),
+      capacity ( knownCapacity != 0 ? knownCapacity : ( s == NULL ? 0 : strlen(s) ) ),
       ownsData ( false ),
       freeFunction ( NULL )
   {
@@ -145,6 +150,14 @@ public:
   {
   }
 
+
+  inline String(const element_type* s, size_type length)
+    : RefCountedObject ( ),
+      m_sdata ( new data_type(s, length) ),
+      m_range ( 0, length )
+  {
+  }
+
   inline String(const String& source, const range_type& range)
     : RefCountedObject ( ),
       m_sdata ( source.m_sdata ),
@@ -201,7 +214,7 @@ public:
 
   inline ~String()
   {
-    m_sdata.reset(NULL);
+    m_sdata.reset();
   }
 
   inline size_type
