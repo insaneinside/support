@@ -1,15 +1,13 @@
-#include <boost/filesystem.hpp>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <cstdlib>
 #include <fcntl.h>
 #include <malloc.h>
 #include <unistd.h>
 #include <utility>
 
 #include <support/readFileIntoString.hh>
-
-namespace bfs = boost::filesystem;
 
 namespace spt
 {
@@ -33,7 +31,17 @@ namespace spt
 	    return std::make_pair<char*,size_t>(NULL, 0);
 	  }
 
-	bufAllocSize = bfs::file_size(pathToFile);
+	struct stat fileStat;
+	if ( fstat(fd, &fileStat) < 0 )
+	  {
+	    if ( SPT_IS_CONTEXT(errorContext) )
+	      { cmlog(errorContext, V_ERR | F_ERRNO, "Failed to stat open file descriptor"); }
+	    else { perror("stat"); }
+
+	    return std::make_pair<char*,size_t>(NULL, 0);
+	  }
+
+	bufAllocSize = fileStat.st_size;
       }
 
     char* buf ( (char*) malloc(bufAllocSize) );
