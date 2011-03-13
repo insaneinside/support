@@ -62,6 +62,14 @@ struct StringRange
     return startIndex == __rhs.startIndex && endIndex == __rhs.endIndex;
   }
 
+
+  inline bool
+  operator != (const StringRange& __rhs) const
+  {
+    return startIndex != __rhs.startIndex
+      || endIndex != __rhs.endIndex;
+  }
+
   /** Get the number of characters contained within this range.
    *
    * @return Length of the range.
