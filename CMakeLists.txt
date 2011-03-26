@@ -78,12 +78,12 @@ mark_as_advanced(SPT_SCALAR_TYPE_DEFINE FORCE)
 
 ################################################################
 # Includes
-set(CONFIG_HEADER_SOURCE
+set(SPT_CONFIG_HEADER_SOURCE
   "${Support_SOURCE_DIR}/cmake/support-config.h.in")
-set(CONFIG_HEADER_DEST
+set(SPT_CONFIG_HEADER_DEST
   "${Support_BINARY_DIR}/include/support/support-config.h")
-mark_as_advanced(FORCE CONFIG_HEADER_SOURCE CONFIG_HEADER_DEST)
-configure_file(${CONFIG_HEADER_SOURCE} ${CONFIG_HEADER_DEST} @ONLY)
+mark_as_advanced(FORCE SPT_CONFIG_HEADER_SOURCE SPT_CONFIG_HEADER_DEST)
+configure_file("${SPT_CONFIG_HEADER_SOURCE}" "${SPT_CONFIG_HEADER_DEST}" @ONLY)
 
 set(SUPPORT_INCLUDE_DIRS
   "${Support_SOURCE_DIR}/include" "${Support_BINARY_DIR}/include"
@@ -139,6 +139,19 @@ if("${CMAKE_HOME_DIRECTORY}" STREQUAL "${Support_SOURCE_DIR}")
   set(SPT_INSTALL ON)
   set(BUILD_TESTING 1)
   add_subdirectory(tests)
+else("${CMAKE_HOME_DIRECTORY}" STREQUAL "${Support_SOURCE_DIR}")
+  mark_as_advanced(FORCE
+    SPT_BUILD_SHARED
+    SPT_BUILD_STATIC
+    SPT_CONTEXT_ENABLE_DESCRIPTION
+    SPT_DEFAULT_SCALAR_TYPE
+    SPT_ENABLE_CONSISTENCY_CHECKS
+    SPT_ENABLE_LOG_CONTEXT
+    SPT_INSTALL
+    SPT_SCALAR_TYPE_DEFINE
+    SPT_VECT_CACHE_MAGNITUDE
+    SUPPORT_INCLUDE_DIRS
+    )
 endif("${CMAKE_HOME_DIRECTORY}" STREQUAL "${Support_SOURCE_DIR}")
 
 # Create a CMake export file for the build tree
