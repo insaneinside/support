@@ -196,13 +196,13 @@ extern "C"
      */
     #define SPT_IS_CONTEXT_PARSE_SPEC(pspec)				\
       ( pspec && ((spt_context_parse_spec_t*) pspec)->magic == SPT_CONTEXT_PARSE_SPEC_MAGIC )
+
+    #define SPT_CONTEXT_HAS_CHILDREN(cxt) ( SPT_IS_CONTEXT(cxt) && cxt->first_child != NULL )
   #else
     #define SPT_IS_CONTEXT(cxt) (cxt)
     #define SPT_IS_CONTEXT_PARSE_SPEC(pspec) (pspec)
     #define SPT_CONTEXT_HAS_CHILDREN(cxt) (cxt->first_child != NULL )
   #endif
-
-  #define SPT_CONTEXT_HAS_CHILDREN(cxt) ( SPT_IS_CONTEXT(cxt) && cxt->first_child != NULL )
 
   /**@}*/
 
