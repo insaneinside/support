@@ -6,6 +6,10 @@
 #ifndef support_spt_context_handlers_h
 #define support_spt_context_handlers_h 1
 
+#include <support/support-config.h>
+
+#ifdef SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -84,5 +88,7 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+
+#endif	/* SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS */
 
 #endif	/* defined(support_spt_context_handlers_h) */

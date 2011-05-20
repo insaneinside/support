@@ -28,7 +28,9 @@ endmacro(option_maybe)
 option_maybe(SPT_ENABLE_LOG_CONTEXT "Enable support for logging contexts" ON)
 option_maybe(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
 option_maybe(SPT_ENABLE_CONSISTENCY_CHECKS "Enable run-time consistency checks" ON)
+option_maybe(SPT_CONTEXT_ENABLE_CALLBACKS "Enable context event callbacks" OFF)
 option_maybe(SPT_CONTEXT_ENABLE_DESCRIPTION "Enable context descriptions" OFF)
+option_maybe(SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS "Enable context output handlers" OFF)
 set(SPT_DEFAULT_SCALAR_TYPE "float" CACHE STRING "Default type for scalar values: one of \"float\", \"double\", or \"long double\".")
 option_maybe(SPT_INSTALL "Install the Support library and headers." OFF)
 
@@ -59,6 +61,18 @@ if(SPT_CONTEXT_ENABLE_DESCRIPTION)
 else(SPT_CONTEXT_ENABLE_DESCRIPTION)
   set(SPT_CONTEXT_ENABLE_DESCRIPTION)
 endif(SPT_CONTEXT_ENABLE_DESCRIPTION)
+
+if(SPT_CONTEXT_ENABLE_CALLBACKS)
+  set(SPT_CONTEXT_ENABLE_CALLBACKS 1)
+else(SPT_CONTEXT_ENABLE_CALLBACKS)
+  set(SPT_CONTEXT_ENABLE_CALLBACKS)
+endif(SPT_CONTEXT_ENABLE_CALLBACKS)
+
+if(SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS)
+  set(SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS 1)
+else(SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS)
+  set(SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS)
+endif(SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS)
 
 set(SPT_SCALAR_TYPE_DEFINE "" CACHE STRING "Symbol to define for scalar_t type.")
 

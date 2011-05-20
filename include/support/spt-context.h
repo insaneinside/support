@@ -36,8 +36,6 @@ extern "C"
    */
   typedef struct __spt_context spt_context_t;
 
-  typedef struct __spt_context_callbacks spt_context_callbacks_t;
-
   typedef mlog_loglevel_t spt_loglevel_t;
   /**@}*/
 /**@}*/
@@ -46,7 +44,10 @@ extern "C"
 }
 #endif
 
+#ifdef SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS
 #include <support/spt-context-handlers.h>
+#endif
+
 #include <support/private/spt-context.h>
 #include <support/spt-context-spec.h>
 /** @addtogroup context
