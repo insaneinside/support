@@ -45,19 +45,19 @@ _print_pspec(const spt_context_parse_spec_t* ps)
   return;
 }
 
-static int
-_fe_print_pspec(dllist_t* node, const void* udata __attribute__((unused)) )
-{
-  _print_pspec(node->data);
-  return 1;
-}
+/* static int
+ * _fe_print_pspec(dllist_t* node, const void* udata __attribute__((unused)) )
+ * {
+ *   _print_pspec(node->data);
+ *   return 1;
+ * } */
 
 static void
 do_test(const char* spec)
 {
   char* ok = "ok";
   char* err = "error";
-  dllist_t* pspec_list = NULL;
+  spt_context_parse_spec_t* pspec_list = NULL;
   timeutil_init_mark_variables();
   fprintf(stderr, "These baseline marks have no code in between:\n");
   timeutil_mark_label("baseline");
@@ -71,11 +71,11 @@ do_test(const char* spec)
       timeutil_begin("Parsing spec string");
       pspec_list = spt_context_parse_specs(spec);
       timeutil_end();
-      int size = dllist_size(pspec_list);
-      fprintf(stderr, "Found %d parse specs.\n", size);
+      /* int size = dllist_size(pspec_list); */
+      /* fprintf(stderr, "Found %d parse specs.\n", size); */
 
-      if ( size > 0 )
-	dllist_foreach(pspec_list, &_fe_print_pspec, NULL);
+      /* if ( size > 0 )
+       * 	dllist_foreach(pspec_list, &_fe_print_pspec, NULL); */
     }
 
   timeutil_begin("Creating contexts");
@@ -103,7 +103,7 @@ do_test(const char* spec)
       timeutil_begin("Applying parse specs");
       spt_context_apply_parse_specs(all, pspec_list);
       timeutil_end();
-      spt_context_parse_spec_destroy_list(pspec_list);
+      spt_context_parse_spec_destroy(pspec_list);
     }
 
   /* Should activate all contexts. */

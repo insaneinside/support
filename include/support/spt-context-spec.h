@@ -6,8 +6,6 @@
 #ifndef support_spt_context_spec_h
 #define support_spt_context_spec_h 1
 
-#include <support/dllist.h>
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -25,15 +23,18 @@ extern "C"
    *
    * The format for string input is as follows, in <a
    * href="http://www.rfc-editor.org/std/std68.txt">ABNF</a> notation:
-   * @verbatim spec = single_spec *("," single_spec)
+   * @verbatim 
+spec			= single_spec *("," single_spec)
 
-single-spec	= state-flag identifier ; Enables or disables a single context.
+single-spec		= [channel-identifier] state-flag context-identifier
 
-state-flag	= "+" / "-"
+state-flag		= "+" / "-"
 
-identifier	= context-name *("." context-name)
+channel-identifier	= "fatal" / ( "err" / "error" ) / ( "warn" / "warning" ) / "debug" / "info"
 
-context-name	= <any CHAR excluding "." and ",">
+context-identifier	= context-name *("." context-name)
+
+context-name		= <any CHAR excluding "." and ",">
 @endverbatim
    *
    * For example, one would enable a context named @c context_name
@@ -58,12 +59,15 @@ context-name	= <any CHAR excluding "." and ",">
    * @param __ispec A string specifying the contexts to enable or
    * disable, in the above-described format.
    *
-   * @return A list of spt_context_parse_spec_t pointers.
+   * @return A spt_context_parse_spec_t pointer.
    */
-  dllist_t*
+  spt_context_parse_spec_t*
   spt_context_parse_specs(const char* __ispec);
 
-  /** Free the memory used by a single parse specification.
+  void
+  spt_context_parse_specs_append(spt_context_parse_spec_t* to, spt_context_parse_spec_t* what);
+
+  /** Free the memory used by a parse specification.
    *
    * @param pspec A pointer to the parse specification object to free.
    */
@@ -73,9 +77,11 @@ context-name	= <any CHAR excluding "." and ",">
   /** Free a list of parse specification objects.
    *
    * @param pspec_list A list of parse specification object pointers.
+   *
+   * @deprecated Use spt_context_parse_spec_destroy instead.
    */
-  void
-  spt_context_parse_spec_destroy_list(dllist_t* pspec_list);
+  void __attribute__ (( __deprecated__ ))
+  spt_context_parse_spec_destroy_list(spt_context_parse_spec_t* pspec_list);
 
 
   /** Apply matching parse specifications to a context.  Each parse
@@ -89,7 +95,7 @@ context-name	= <any CHAR excluding "." and ",">
    */
   void
   spt_context_apply_parse_specs(spt_context_t* context,
-				dllist_t* pspec_list);
+				spt_context_parse_spec_t* pspec_list);
 
   /**@}*/
 

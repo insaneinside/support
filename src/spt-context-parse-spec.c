@@ -138,13 +138,6 @@ _parse_single_spec(const char* _spec, const size_t _length)
 /* ****************************************************************
  * Callbacks
  */
-static int
-_fe_destroy_parse_spec(dllist_t* node, const void* udata __attribute__(( unused )) )
-{
-  free(node->data);
-  return 1;
-}
-
 static uint8_t
 _fe_context_apply_single_spec(spt_context_t* context, void* udata)
 {
@@ -163,7 +156,7 @@ _fe_apply_pspecs(dllist_t* node, const void* udata)
 
   if ( _apply_pspec(ps, cxt) )
     {
-      pad->pspec_list = dllist_remove_node(pad->pspec_list, node);
+      pad->pspec_list = dllist_unlink(pad->pspec_list, node);
     }
 
   return 1;
@@ -175,20 +168,41 @@ _fe_apply_pspecs(dllist_t* node, const void* udata)
 
 void
 spt_context_apply_parse_specs(spt_context_t* context,
-				 dllist_t* pspec_list)
+			      spt_context_parse_spec_t* pspec_list)
 {
-  dllist_t* use_list = dllist_copy(pspec_list);
+  size_t n = 0;
+  for ( spt_context_parse_spec_t* pspec = pspec_list; pspec != NULL; ++n )
+    pspec = pspec->next;
+
+  dllist_t*
+    nodes = (dllist_t*) alloca(sizeof(dllist_t) * n);
+  dllist_t*
+    cnode = nodes;
+  for ( spt_context_parse_spec_t* pspec = pspec_list; cnode < nodes + n; ++cnode )
+    {
+#ifdef SPT_ENABLE_CONSISTENCY_CHECKS
+      cnode->magic = DLLIST_MAGIC;
+#endif
+      cnode->next = NULL;
+      cnode->prev = NULL;
+
+      cnode->data = pspec;
+      pspec = pspec->next;
+      if ( pspec )
+	{
+	  cnode->next = cnode + 1;
+	  (cnode+1)->prev = cnode;
+	}
+    }
+
   struct pspec_applydata pad;
-  pad.pspec_list = use_list;
+  pad.pspec_list = nodes;
   pad.context = context;
 
-  dllist_foreach(use_list, &_fe_apply_pspecs, &pad);
-
-  if ( pad.pspec_list )
-    dllist_free(pad.pspec_list);
+  dllist_foreach(nodes, &_fe_apply_pspecs, &pad);
 }
 
-dllist_t*
+spt_context_parse_spec_t*
 spt_context_parse_specs(const char* __ispec)
 {
   if ( !__ispec )
@@ -202,8 +216,9 @@ spt_context_parse_specs(const char* __ispec)
   char* sp = spec;
   char* end = spec + len;
   char* sg_spec_end = NULL;
-  spt_context_parse_spec_t* pspec = NULL;
-  dllist_t* out = NULL;
+  spt_context_parse_spec_t
+    *pspec = NULL,
+    *out = NULL;
 
   while ( sp <= end )
     {
@@ -213,13 +228,23 @@ spt_context_parse_specs(const char* __ispec)
 	sg_spec_end = end;
 
       *sg_spec_end = '\0';
-      pspec = _parse_single_spec(sp, (size_t) (sg_spec_end - sp) );
-      if ( pspec )
+      spt_context_parse_spec_t* rspec = _parse_single_spec(sp, (size_t) (sg_spec_end - sp) );
+      if ( rspec )
 	{
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
-	  assert(SPT_IS_CONTEXT_PARSE_SPEC(pspec));
+	  assert(SPT_IS_CONTEXT_PARSE_SPEC(rspec));
 #endif
-	  out = dllist_append(out, pspec);
+	  if ( ! out )
+	    {
+	      out = rspec;
+	      pspec = out;
+	    }
+	  else
+	    {
+	      pspec->next = rspec;
+	      pspec = pspec->next;
+	    }
+
 	  count++;
 	}
       sp = sg_spec_end + 1;
@@ -236,9 +261,22 @@ spt_context_parse_spec_destroy(spt_context_parse_spec_t* pspec)
 
 
 void
-spt_context_parse_spec_destroy_list(dllist_t* pspec_list)
+spt_context_parse_spec_destroy_list(spt_context_parse_spec_t* pspec_list)
 {
-  dllist_foreach(pspec_list, &_fe_destroy_parse_spec, NULL);
-  dllist_free(pspec_list);
+  do
+    {
+      spt_context_parse_spec_t* pspec = pspec_list;
+      pspec_list = pspec_list->next;
+      free(pspec);
+    } while ( pspec_list );
 }
 
+void
+spt_context_parse_specs_append(spt_context_parse_spec_t* to, spt_context_parse_spec_t* what)
+{
+  while ( to->next )
+    {
+      to = to->next;
+    }
+  to->next = what;
+}
