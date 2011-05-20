@@ -33,7 +33,7 @@ namespace spt
     {}
 
     void
-    reset()
+    zero()
     {
       unsigned int i, j;
       for ( i = 0; i < _T_rows; i++ )
