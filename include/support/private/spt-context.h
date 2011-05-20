@@ -62,17 +62,20 @@ extern "C"
     /** Symbolic name */
     char* name;
 
-    /** @internal Fully-scoped name */
+    /** @internal Fully-scoped name (the context-identifier). */
     char* full_name;
 
+
 #ifdef SPT_CONTEXT_ENABLE_DESCRIPTION
-    /** Description string, in case the user asks for a list of available contexts */
+    /** Description string, in case the user asks for a list of available contexts. */
     char* description;
 #endif
 
+#ifdef SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS
     /** Output handler for this context.
      */
     spt_context_handler_t* output_handler;
+#endif
 
     /** State flags.
      * @see spt_context_flags
@@ -101,52 +104,6 @@ extern "C"
     /**@}*/
   };
 
-#ifdef SPT_CONTEXT_ENABLE_CALLBACKS
-  /** Callback container structure for log contexts.  This provides a
-   * concise way to specify and store the collection of callbacks for
-   * one or more contexts.
-   *
-   * @note Like a context's state, its callbacks are also inherited by
-   *   its children; however, unlike its state, explicitly setting a
-   *   set of callbacks on a child will <em>not</em> disable the
-   *   inherited callbacks. \par
-   *    To disable inherited callbacks for a subtree starting at
-   *   <code>cxt</code>, use
-   *   @code
-   * spt_context_callbacks_set_inheritance(cxt, SPT_CONTEXT_CALLBACKS_NO_INHERITANCE);
-   *   @endcode
-   *
-   * @ingroup context
-   */
-  struct __spt_context_callbacks
-  {
-    /** @name Initialization and destruction
-     *@{
-     */
-    /** Pointer-to-function called immediately after the context is
-     *	created.
-     */
-    void (*post_create)(struct __spt_context* context, void* user_data);
-
-    /** Pointer-to-function called immediately before the context is
-     * destroyed.
-     */
-    void (*pre_destroy)(struct __spt_context* context, void* user_data);
-    /**@}*/
-
-    /** @name Hierarchy changes
-     *@{
-     */
-    /** Pointer-to-function called when a new sibling has been added.  */
-    void (*post_sibling_add)(struct __spt_context* this_context, struct __spt_context* sibling);
-
-    /** Pointer-to-function called before a sibling is removed.  */
-    void (*pre_sibling_remove)(struct __spt_context* this_context, struct __spt_context* sibling);
-    void (*post_child_add)(struct __spt_context* this_context, struct __spt_context* child);
-    void (*pre_child_remove)(struct __spt_context* this_context, struct __spt_context* child);
-  /**@}*/
-  };
-#endif  /* defined(SPT_CONTEXT_ENABLE_CALLBACKS) */
   /**@}*/
 
   /** @ingroup context_spec */
@@ -177,6 +134,9 @@ extern "C"
      *  whose full name ends with the elements in name_array.
      */
     char** name_array;
+
+    /** Pointer to the next parse spec in the list (if any).  */
+    struct __spt_context_parse_spec* next;
   };
 
   /** Determine if a context is activated.

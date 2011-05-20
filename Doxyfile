@@ -202,7 +202,9 @@ INCLUDE_PATH           = include/ \
                          build/include/
 INCLUDE_FILE_PATTERNS  = 
 PREDEFINED             = __cplusplus \
-                         MLOG_ENABLE_CONTEXT
+                         SPT_ENABLE_CONTEXT \
+			 SPT_CONTEXT_ENABLE_DESCRIPTION \
+			 SPT_CONTEXT_ENABLE_CALLBACKS
 EXPAND_AS_DEFINED      = 
 SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
