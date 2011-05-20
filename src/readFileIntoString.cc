@@ -1,12 +1,12 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
-#include <cstdlib>
 #include <fcntl.h>
 #include <malloc.h>
 #include <unistd.h>
 #include <utility>
-
+#include <cstdlib>		/* for alloca() */
+#include <sys/stat.h>
 #include <support/readFileIntoString.hh>
 
 namespace spt
