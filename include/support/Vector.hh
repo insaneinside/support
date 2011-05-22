@@ -180,9 +180,9 @@ namespace spt
     compute_mag2() const
     {
       return
-	SQ(_M_val[0]) +
-	SQ(_M_val[1]) +
-	SQ(_M_val[2]);
+	( _M_val[0] * _M_val[0] ) +
+	( _M_val[1] * _M_val[1] ) +
+	( _M_val[2] * _M_val[2] );
     }
 
     inline void
@@ -411,7 +411,7 @@ namespace spt
     }
 
     inline Vector
-    operator-()
+    operator-() const
     {
       return Vector(-_M_val[0],
 		    -_M_val[1],
