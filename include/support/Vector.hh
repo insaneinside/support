@@ -31,11 +31,13 @@ namespace spt
     static const size_type N = 3;
 
     inline Vector(Vector&& v)
-      : _M_val ( ),
-	_M_mag_cached ( std::move( v._M_mag_cached ) ),
+      : _M_val ( )
+#ifdef SPT_VECT_CACHE_MAGNITUDE
+      ,_M_mag_cached ( std::move( v._M_mag_cached ) ),
 	_M_mag2_cached ( std::move( v._M_mag2_cached ) ),
-	_M_recalc_mag ( std::move( v._M_recalc_mag ) ),
-	_M_recalc_mag2 ( std::move( v._M_recalc_mag2) )
+	_M_recalc_mag ( true ),
+	_M_recalc_mag2 ( true )
+#endif
     {
       SV_COPY(_M_val, v._M_val);
     }
@@ -77,9 +79,9 @@ namespace spt
 
 
     inline Vector()
+      : _M_val { 0, 0, 0 }
 #ifdef SPT_VECT_CACHE_MAGNITUDE
-      : _M_val { 0, 0, 0 },
-      _M_mag_cached(0), _M_mag2_cached ( 0 ), _M_recalc_mag(false), _M_recalc_mag2 ( false )
+      ,_M_mag_cached(0), _M_mag2_cached ( 0 ), _M_recalc_mag(false), _M_recalc_mag2 ( false )
 #endif
     {
     }
@@ -87,7 +89,7 @@ namespace spt
 
     inline Vector(const Vector& v)
 #ifdef SPT_VECT_CACHE_MAGNITUDE
-      : _M_mag_cached(v._M_mag_cached), _M_mag2_cached ( v._M_mag2_cached ), _M_recalc_mag(v._M_recalc_mag), _M_recalc_mag2 ( v._M_recalc_mag2 )
+      : _M_mag_cached(v._M_mag_cached), _M_mag2_cached ( v._M_mag2_cached ), _M_recalc_mag(true), _M_recalc_mag2 ( true )
 #endif
     {
       SV_COPY(_M_val, v._M_val);
@@ -172,6 +174,10 @@ namespace spt
     set(const Vector& r)
     {
       *this = r;
+#ifdef SPT_VECT_CACHE_MAGNITUDE
+      _M_recalc_mag = true;
+      _M_recalc_mag2 = true;
+#endif
     }
 
     inline void
@@ -226,66 +232,23 @@ namespace spt
     inline void
     normalize()
     {
-      scalar_t m(this->mag());
-
-      if ( S_EQ(m, S_LITERAL(1.0)) ||
-	   S_LT(m, S_SLOP) )
-	return;
-
-      _M_val[0] /= m;
-      _M_val[1] /= m;
-      _M_val[2] /= m;
+      operator /= (mag());
 
 
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_mag_cached = S_LITERAL(1.0);
       _M_recalc_mag = false;
+      _M_mag2_cached = S_LITERAL(1.0);
+      _M_recalc_mag2 = false;
 #endif
 
-      return;
-    }
-
-    inline Vector
-    unit()
-    {
-      scalar_t m(mag());
-
-      if ( S_EQ(m, S_LITERAL(1.0)) || S_LT(m, S_SLOP) )
-	return *this;
-
-      Vector o(*this);
-
-      o._M_val[0] /= m;
-      o._M_val[1] /= m;
-      o._M_val[2] /= m;
-
-#ifdef USE_DEBUG
-      assert(S_EQ(o.mag(), S_LITERAL(1.0)));
-#endif
-
-      return o;
     }
 
 
     inline Vector
     unit() const
     {
-      scalar_t m = mag();
-
-      if ( S_EQ(m, S_LITERAL(1.0)) ||
-	   m < S_SLOP )
-	return *this;
-
-      Vector o = *this;
-
-      o._M_val[0] /= m;
-      o._M_val[1] /= m;
-      o._M_val[2] /= m;
-
-#ifdef USE_DEBUG
-      assert(S_EQ(o.mag(), S_LITERAL(1.0)));
-#endif
-      return o;
+      return ( (*this) / mag() );
     }
   
 
@@ -323,18 +286,10 @@ namespace spt
     inline bool
     operator==(const Vector& r) const
     {
-#ifdef SPT_VECT_CACHE_MAGNITUDE
-      if ( ( !_M_recalc_mag && r._M_recalc_mag ) &&
-	   S_EQ(_M_mag_cached, r._M_mag_cached) )
-	return true;
-#endif
-
-      if ( S_EQ(_M_val[0], r._M_val[0]) &&
-	   S_EQ(_M_val[1], r._M_val[1]) &&
-	   S_EQ(_M_val[2], r._M_val[2]) )
-	return true;
-
-      return false;
+      return
+	S_EQ(_M_val[0], r._M_val[0]) &&
+	S_EQ(_M_val[1], r._M_val[1]) &&
+	S_EQ(_M_val[2], r._M_val[2]);
     }
 
 
@@ -430,6 +385,7 @@ namespace spt
 
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
+      _M_recalc_mag2 = true;
 #endif
       return *this;
     }
@@ -443,6 +399,7 @@ namespace spt
 
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
+      _M_recalc_mag2 = true;
 #endif
 
       return *this;
@@ -471,6 +428,7 @@ namespace spt
 
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
+      _M_recalc_mag2 = true;
 #endif
 
       return *this;
@@ -485,6 +443,7 @@ namespace spt
 
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
+      _M_recalc_mag2 = true;
 #endif
 
       return *this;
@@ -499,6 +458,7 @@ namespace spt
 
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
+      _M_recalc_mag2 = true;
 #endif
 
       return *this;
