@@ -17,6 +17,7 @@
 #include <fenv.h>
 #include <stdexcept>
 #include <cmath>
+#include <support/Vec.hh>
 #include <stdarg.h>
 
 #define MSG_OORANGE "condition [-1 < vn < 3] not met"
@@ -26,7 +27,8 @@ namespace spt
   class Vector
   {
   public:
-    typedef unsigned int size_type;
+    typedef size_t size_type;
+    static const size_type N = 3;
 
     inline Vector(Vector&& v)
       : _M_val ( ),
@@ -37,6 +39,42 @@ namespace spt
     {
       SV_COPY(_M_val, v._M_val);
     }
+
+
+    template < size_type _N >
+    inline Vector(const Vec<_N>& v)
+      : _M_val ( ),
+	_M_mag_cached ( ),
+	_M_mag2_cached ( ),
+	_M_recalc_mag ( true ),
+	_M_recalc_mag2 ( true )
+    {
+      operator = (v);
+    }
+
+    template < size_type _N >
+    inline Vector&
+    operator =(const Vec<_N>& other)
+    {
+      for ( unsigned int i ( 0 ); i < N && i < _N; ++i )
+	_M_val[i] = other[i];
+#ifdef SPT_VECT_CACHE_MAGNITUDE
+      _M_recalc_mag = true;
+      _M_recalc_mag2 = true;
+#endif
+      return *this;
+    }
+
+    template < size_type _N>
+    inline scalar_t
+    dot(const Vec<_N>& other, bool include_missing = false ) const
+    {
+      scalar_t o ( 0 );
+      for ( unsigned int i ( 0 ); i < ( include_missing ? std::max(N, _N) : std::min(N, _N) ); ++i )
+	o += ( i < N ? _M_val[i] : S_LITERAL(1.0) ) * ( i < _N ? other[i] : S_LITERAL(1.0) );
+      return o;
+    }
+
 
     inline Vector()
 #ifdef SPT_VECT_CACHE_MAGNITUDE

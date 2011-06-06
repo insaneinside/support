@@ -5,11 +5,12 @@ namespace spt
 {
   /** A templatized implementation of Vector
    */
-  template < unsigned int _N >
+  template < size_t _N >
   class Vec
   {
   public:
-    typedef unsigned int size_type;
+    typedef size_t size_type;
+    static const size_type N = _N;
 
     Vec()
 #ifdef SPT_VECT_CACHE_MAGNITUDE
@@ -19,6 +20,27 @@ namespace spt
     }
 
 
+    template < typename _VectorType >
+    Vec<_N>&
+    operator =(const _VectorType& other)
+    {
+      for ( unsigned int i ( 0 ); i < N && i < _VectorType::N; ++i )
+	_M_val[i] = other[i];
+      _M_recalc_mag = true;
+      return *this;
+    }
+
+    template < typename _VectorType >
+    inline scalar_t
+    dot(const _VectorType& other, bool include_missing = false) const
+    {
+      scalar_t o ( 0 );
+      for ( unsigned int i ( 0 ); i < ( include_missing ? std::max(N, _VectorType::N) : std::min(N, _VectorType::N) ); ++i )
+	o += ( i < N ? _M_val[i] : S_LITERAL(1.0) ) * ( i < _VectorType::N ? other[i] : S_LITERAL(1.0) );
+      return o;
+    }
+
+    inline
     Vec(const Vec<_N>& v)
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(v._M_mag_cached), _M_recalc_mag(v._M_recalc_mag)
