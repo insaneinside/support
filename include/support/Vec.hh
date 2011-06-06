@@ -12,6 +12,7 @@ namespace spt
     typedef size_t size_type;
     static const size_type N = _N;
 
+    inline
     Vec()
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(0), _M_recalc_mag(false)
@@ -46,7 +47,8 @@ namespace spt
       : _M_mag_cached(v._M_mag_cached), _M_recalc_mag(v._M_recalc_mag)
 #endif
     {
-      memcpy(_M_val, v._M_val, _N * sizeof(scalar_t));
+      for ( unsigned int i ( 0 ); i < _N; ++i )
+	_M_val[i] = v._M_val[i];
     }
 
 
@@ -55,10 +57,12 @@ namespace spt
       : _M_mag_cached(0), _M_recalc_mag(true)
 #endif
     {
-      memcpy(_M_val, v, _N * sizeof(scalar_t));
+      for ( unsigned int i ( 0 ); i < _N; ++i )
+	_M_val[i] = v[i];
     }
 
 
+    inline
     Vec(const scalar_t s0, ...)
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       : _M_mag_cached(0), _M_recalc_mag(true)
@@ -66,48 +70,51 @@ namespace spt
     {
       va_list ap;
       va_start(ap, s0);
-      unsigned int i;
-      for ( i = 1; i < _N; i++ )
+      
+      _M_val[0] = s0;
+      for ( unsigned int i ( 1 ); i < _N; i++ )
 	_M_val[i] = static_cast<scalar_t>(va_arg(ap, double));
 
       va_end(ap);
     }
 
     /** Destructor. */
-    virtual
+    inline virtual
     ~Vec<_N>() {}
 
-    void
-    set(unsigned int vn, scalar_t val)
+    inline void
+    set(scalar_t first, ...)
     {
-      if ( vn < _N )
-	_M_val[vn] = val;
-      else
-	throw std::out_of_range(MSG_OORANGE);
-#ifdef SPT_VECT_CACHE_MAGNITUDE
-      _M_recalc_mag = true;
-#endif
+      _M_val[0] = first;
+      va_list ap;
+      va_start(ap, first);
+      for ( unsigned int i ( 1 ); i < _N; i++ )
+	_M_val[i] = static_cast<scalar_t>(va_arg(ap, double));
+
+      va_end(ap);
     }
 
-    void
+    inline void
     set(scalar_t nv[_N])
     {
-      memcpy(_M_val, nv, _N * sizeof(scalar_t));
+      for ( unsigned int i ( 0 ); i < _N; ++i )
+	_M_val[i] = nv[i];
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
 #endif
     }
 
-    void
+    inline void
     set(const Vec<_N>& r)
     {
       memcpy(_M_val, r._M_val, _N * sizeof(scalar_t));
     }
 
-    void
+    inline void
     clear()
     {
-      memset(_M_val, 0, _N * sizeof(scalar_t));
+      for ( unsigned int i ( 0 ); i < _N; ++i )
+	_M_val[i] = 0;
 
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_mag_cached = 0;
@@ -265,17 +272,17 @@ namespace spt
       if ( vn < _N )
 	return _M_val[vn];
       else
-	throw std::out_of_range(MSG_OORANGE);
+	throw std::out_of_range("Bad index in read-write operator!");
     }
 
 
-    inline const scalar_t&
+    inline scalar_t
     operator[](const size_type vn) const
     {
       if ( vn < _N )
 	return const_cast<scalar_t&>(_M_val[vn]);
       else
-	throw std::out_of_range(MSG_OORANGE);
+	throw std::out_of_range("Bad index in access operator!");
     }
 
     inline bool
