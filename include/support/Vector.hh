@@ -255,13 +255,12 @@ namespace spt
     inline const char*
     to_s() const
     {
-      static char buf[64];		// stupid, I know.  feel free to fix it. :P
-      sprintf(buf, "{ %.2f, %.2f, %.2f }",
+      sprintf(_M_buf, "{ %.2f, %.2f, %.2f }",
 	      static_cast<double>(_M_val[0]),
 	      static_cast<double>(_M_val[1]),
 	      static_cast<double>(_M_val[2]));
 
-      return buf;
+      return const_cast<char*>(_M_buf);
     }
 
     inline scalar_t&
@@ -499,6 +498,7 @@ namespace spt
   protected:
     svec_t _M_val;
     /* scalar_t _M_val[3]; */
+    mutable char _M_buf[32];
 #ifdef SPT_VECT_CACHE_MAGNITUDE
     mutable scalar_t _M_mag_cached;
     mutable scalar_t _M_mag2_cached;
