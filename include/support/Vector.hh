@@ -44,7 +44,7 @@ namespace spt
 
 
     template < size_type _N >
-    inline Vector(const Vec<_N>& v)
+    explicit Vector(const Vec<_N>& v)
       : _M_val ( ),
 	_M_mag_cached ( ),
 	_M_mag2_cached ( ),
@@ -255,7 +255,7 @@ namespace spt
     inline const char*
     to_s() const
     {
-      sprintf(_M_buf, "{ %.2f, %.2f, %.2f }",
+      sprintf(_M_buf, "{ %.3f, %.3f, %.3f }",
 	      static_cast<double>(_M_val[0]),
 	      static_cast<double>(_M_val[1]),
 	      static_cast<double>(_M_val[2]));
@@ -273,7 +273,7 @@ namespace spt
     }
 
 
-    inline scalar_t&
+    inline scalar_t
     operator[](unsigned int vn) const
     {
       if ( vn < 3 )
@@ -507,11 +507,22 @@ namespace spt
 #endif
   };
 
-  inline Vector
-  operator*(const scalar_t s, const Vector& v)
+}
+inline spt::Vector
+operator*(const scalar_t s, const spt::Vector& v)
   {
     return v * s;
   }
+
+#include <ostream>
+
+/**  Shift-append operator for output of an spt::Vector to an STL stream.
+ */
+inline std::basic_ostream<char>&
+operator << (std::basic_ostream<char>& os, const spt::Vector& v)
+{
+  return ( os << "{ " << v[0] << ", " << v[1] << ", " << v[2] << " }" );
 }
+
 #endif // i'm c++, damnit!
 #endif	// SUPPORT_VECT_HH
