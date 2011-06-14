@@ -26,14 +26,14 @@ extern "C" {
 
   /** \name Comparison  */
   /*@{*/
-#define S_EQ(a,b) 	(S_ABS((a) - (b)) < S_SLOP)
-#define S_NE(a,b)	(S_ABS((a) - (b)) >= S_SLOP)
-#define S_NONZERO(a)	( a >= S_SLOP || a <= -S_SLOP )
+#define S_EQ(a,b) 	(S_ABS((a) - (b)) <= S_SLOP)
+#define S_NE(a,b)	(S_ABS((a) - (b)) > S_SLOP)
+#define S_NONZERO(a)	( a > S_SLOP || a < -S_SLOP )
 
-#define S_ZERO(a) 	(S_ABS(a) < S_SLOP)
+#define S_ZERO(a) 	(S_ABS(a) <= S_SLOP)
 
-#define S_LT0(a)	( a < 0 )
-#define S_GT0(a)	( a > 0 )
+#define S_LT0(a)	( a < S_LITERAL(0.0) )
+#define S_GT0(a)	( a > S_LITERAL(0.0) )
 
 #define S_LT(a,b) 	( a < b )
 #define S_LTE(a,b) 	( a <= b )
@@ -160,8 +160,10 @@ extern "C" {
 
   #ifdef S_TYPE_FLOAT
     #define S_LITERAL(n)	n##f
+    #define SC_HUGE_VAL HUGE_VALF
   #else
     #define S_LITERAL(n)	n
+    #define SC_HUGE_VAL HUGE_VAL
   #endif
 
   #define SC_E		M_E
@@ -185,6 +187,7 @@ extern "C" {
 
   #define S_LITERAL(n)	n##l
 
+  #define SC_HUGE_VAL   HUGE_VALL
   #define SC_E		M_El
   #define SC_LOG2E	M_LOG2El
   #define SC_LOG10E	M_LOG10El
