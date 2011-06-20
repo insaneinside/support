@@ -286,6 +286,10 @@ namespace spt
     inline bool
     operator==(const Vec<_N>& r) const
     {
+      if ( ( hasNaN() && ! r.hasNaN() )
+	   || ( ! hasNaN() && r.hasNaN() ) )
+	return false;
+
       for ( size_type i ( 0 ); i < _N; ++i )
 	if ( S_NE(_M_val[i], r._M_val[i]) )
 	  return false;
@@ -428,6 +432,33 @@ namespace spt
     {
       return const_cast<scalar_t*>(_M_val);
     }
+
+    inline bool
+    operator < (const Vec<_N>& v) const
+    {
+      bool
+	hN ( hasNaN() ),
+	vhN ( v.hasNaN() );
+
+      if ( hN && ! vhN )
+	return true;
+      else if ( vhN && ! hN )
+	return false;
+
+      for ( size_type i ( 0 ); i < _N; ++i )
+	if ( _M_val[i] < v._M_val[i] )
+	  return true;
+      return false;
+    }
+
+    bool hasNaN() const
+    {
+      for ( size_type i ( 0 ); i < _N; ++i )
+	if ( std::isnan(_M_val[i]) )
+	  return true;
+      return false;
+    }
+      
 
   protected:
 
