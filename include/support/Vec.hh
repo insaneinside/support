@@ -73,15 +73,21 @@ namespace spt
     inline virtual
     ~Vec<_N>() {}
 
-    /* template < typename _VectorType >
-     * Vec<_N>&
-     * operator =(const _VectorType& other)
-     * {
-     *   for ( unsigned int i ( 0 ); i < N && i < _VectorType::N; ++i )
-     * 	_M_val[i] = other[i];
-     *   _M_recalc_mag = true;
-     *   return *this;
-     * } */
+    Vec<_N>&
+    operator =(const Vec<_N>& other)
+    {
+      for ( size_type i ( 0 ); i < _N; ++i )
+    	_M_val[i] = other._M_val[i];
+
+#ifdef SPT_VECT_CACHE_MAGNITUDE
+      _M_recalc_mag = other._M_recalc_mag;
+      _M_mag_cached = other._M_mag_cached;
+      _M_recalc_mag2 = other._M_recalc_mag2;
+      _M_mag2_cached = other._M_mag2_cached;
+#endif
+      
+      return *this;
+    }
 
     Vec<_N>&
     operator =(const scalar_t s[_N])
