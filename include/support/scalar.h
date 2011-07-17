@@ -24,8 +24,8 @@ extern "C" {
 #define S_SLOP		S_EPSILON
 #endif
 
-  /** \name Comparison  */
-  /*@{*/
+  /** \name Comparison
+   *@{*/
 #define S_EQ(a,b) 	(S_ABS((a) - (b)) <= S_SLOP)
 #define S_NE(a,b)	(S_ABS((a) - (b)) > S_SLOP)
 #define S_NONZERO(a)	( a > S_SLOP || a < -S_SLOP )
@@ -39,9 +39,13 @@ extern "C" {
 #define S_LTE(a,b) 	( a <= b )
 #define S_GT(a,b) 	( a > b )
 #define S_GTE(a,b) 	((a) >= (b))
-  /*@}*/
+  /**@}*/
 
-#define S_SIGNBIT(n)	std::signbit(n)
+#ifdef __cplusplus
+  #define S_SIGNBIT(n)	std::signbit(n)
+#else
+  #define S_SIGNBIT(n) signbit(n)
+#endif
 
 #ifdef S_TYPE_FLOAT
 
@@ -49,6 +53,7 @@ extern "C" {
   #define S_MAXIMUM	FLT_MAX
 
   #define S_TYPE 	float
+  #define S_TYPE_STRING "float"
 
     /* Functions */
   #define S_HYPOT(x,y)	hypotf(x,y)
@@ -85,6 +90,7 @@ extern "C" {
   #define S_MAXIMUM	DBL_MAX
 
   #define S_TYPE 	double
+  #define S_TYPE_STRING "double"
 
   #define S_HYPOT(x,y)	hypot(x,y)
   #define S_SQRT(n)	sqrt(n)
@@ -120,6 +126,7 @@ extern "C" {
   #define S_MAXIMUM	LDBL_MAX
 
   #define S_TYPE 	long double
+  #define S_TYPE_STRING "long double"
 
   #define S_HYPOT(x,y)	hypotl(x,y)
   #define S_SQRT(n)	sqrtl(n)
