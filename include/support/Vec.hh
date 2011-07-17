@@ -1,6 +1,7 @@
 #ifndef Vec_hh
 #define Vec_hh 1
 
+#include <type_traits>
 #include <support/scalar.h>
 #include <cstdarg>
 #include <cstring>
@@ -10,11 +11,13 @@ namespace spt
 {
   /** A templatized implementation of Vector
    */
-  template < size_t _N >
+  template < size_t _N, typename _ValueType = scalar_t >
   class Vec
   {
   public:
+    typedef  _ValueType value_type;
     typedef size_t size_type;
+
     static const size_type N = _N;
 
     inline
@@ -28,7 +31,7 @@ namespace spt
     }
 
     inline
-    Vec(const Vec<_N>& v)
+    Vec(const Vec& v)
       : _M_val { 0 }
 #ifdef SPT_VECT_CACHE_MAGNITUDE
         ,_M_mag_cached(v._M_mag_cached), _M_recalc_mag(v._M_recalc_mag),
@@ -41,7 +44,7 @@ namespace spt
 
 
     inline
-    Vec(const scalar_t v[])
+    Vec(const value_type* v)
       : _M_val { }
 #ifdef SPT_VECT_CACHE_MAGNITUDE
         ,_M_mag_cached(0), _M_recalc_mag(true), _M_mag2_cached(0), _M_recalc_mag2(true)
@@ -52,29 +55,30 @@ namespace spt
     }
 
 
-    __attribute__(( noinline ))	/* Variadic, so it's not inlinable. */
-    Vec(scalar_t s0, ...)
-      : _M_val { 0 }
+    template < typename... _S >
+    Vec(_S... values)
+      : _M_val { static_cast<value_type>(values)... }
 #ifdef SPT_VECT_CACHE_MAGNITUDE
         ,_M_mag_cached(0), _M_recalc_mag(true), _M_mag2_cached(0), _M_recalc_mag2(true)
 #endif
     {
-      va_list ap;
-      va_start(ap, s0);
-      
-      _M_val[0] = s0;
-      for ( size_type i ( 1 ); i < _N; ++i )
-	_M_val[i] = static_cast<scalar_t>(va_arg(ap, double));
-
-      va_end(ap);
+      /* va_list ap;
+       * va_start(ap, s0);
+       * 
+       * _M_val[0] = s0;
+       * for ( size_type i ( 1 ); i < _N; ++i )
+       * 	_M_val[i] = static_cast<value_type>(va_arg(ap, double));
+       * 
+       * va_end(ap); */
     }
+
 
     /** Destructor. */
     inline virtual
-    ~Vec<_N>() {}
+    ~Vec() {}
 
-    Vec<_N>&
-    operator =(const Vec<_N>& other)
+    Vec&
+    operator =(const Vec& other)
     {
       for ( size_type i ( 0 ); i < _N; ++i )
     	_M_val[i] = other._M_val[i];
@@ -89,8 +93,8 @@ namespace spt
       return *this;
     }
 
-    Vec<_N>&
-    operator =(const scalar_t s[_N])
+    Vec&
+    operator =(const value_type s[_N])
     {
       for ( size_type i ( 0 ); i < _N; ++i )
 	_M_val[i] = s[i];
@@ -103,13 +107,13 @@ namespace spt
 
     __attribute__(( noinline ))	/* Variadic, so it's (apparently) not inlinable. */
     void
-    set(scalar_t first, ...)
+    set(value_type first, ...)
     {
       _M_val[0] = first;
       va_list ap;
       va_start(ap, first);
       for ( size_type i ( 1 ); i < _N; ++i )
-	_M_val[i] = static_cast<scalar_t>(va_arg(ap, double));
+	_M_val[i] = static_cast<value_type>(va_arg(ap, double));
 
       va_end(ap);
 #ifdef SPT_VECT_CACHE_MAGNITUDE
@@ -119,7 +123,7 @@ namespace spt
     }
 
     inline void
-    set(scalar_t nv[_N])
+    set(value_type nv[_N])
     {
       for ( size_type i ( 0 ); i < _N; ++i )
 	_M_val[i] = nv[i];
@@ -130,9 +134,9 @@ namespace spt
     }
 
     inline void
-    set(const Vec<_N>& r)
+    set(const Vec& r)
     {
-      memcpy(_M_val, r._M_val, _N * sizeof(scalar_t));
+      memcpy(_M_val, r._M_val, _N * sizeof(value_type));
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
       _M_recalc_mag2 = true;
@@ -154,7 +158,7 @@ namespace spt
     }
 
 
-    scalar_t
+    value_type
     mag2() const
     {
 #ifdef SPT_VECT_CACHE_MAGNITUDE
@@ -169,7 +173,7 @@ namespace spt
 #endif
     }
 
-    scalar_t
+    value_type
     mag() const
     {
 #ifdef SPT_VECT_CACHE_MAGNITUDE
@@ -185,13 +189,13 @@ namespace spt
     }
 
 
-    scalar_t
+    value_type
     compute_mag() const
     {
       return S_SQRT( mag2() );
     }
 
-    scalar_t
+    value_type
     compute_mag2() const
     {
       return dot(*this);
@@ -202,7 +206,7 @@ namespace spt
     void
     normalize()
     {
-      scalar_t m(this->mag());
+      value_type m(this->mag());
 
       if ( S_EQ(m, S_LITERAL(1.0)) ||
 	   S_LT(m, S_SLOP) )
@@ -220,16 +224,16 @@ namespace spt
       return;
     }
 
-    Vec<_N>
+    Vec
     unit() const
     {
-      scalar_t m(mag());
+      value_type m(mag());
 
       if ( S_EQ(m, S_LITERAL(1.0)) ||
 	   m < S_SLOP )
 	return *this;
 
-      Vec<_N> o;
+      Vec o;
 
       for ( size_type i = 0; i < _N; ++i )
 	o._M_val[i] = _M_val[i] / m;
@@ -270,7 +274,7 @@ namespace spt
       return buf;
     }
 
-    inline scalar_t&
+    inline value_type&
     operator[](const size_type vn)
     { 
       if ( vn < _N )
@@ -280,17 +284,17 @@ namespace spt
     }
 
 
-    inline scalar_t
+    inline value_type
     operator[](const size_type vn) const
     {
       if ( vn < _N )
-	return const_cast<scalar_t&>(_M_val[vn]);
+	return const_cast<value_type&>(_M_val[vn]);
       else
 	throw std::out_of_range("Bad index in access operator [] !");
     }
 
     inline bool
-    operator==(const Vec<_N>& r) const
+    operator==(const Vec& r) const
     {
       if ( ( hasNaN() && ! r.hasNaN() )
 	   || ( ! hasNaN() && r.hasNaN() ) )
@@ -305,22 +309,22 @@ namespace spt
 
 
     inline bool
-    operator!=(const Vec<_N>& r) const
+    operator!=(const Vec& r) const
     {
       return !operator==(r);
     }
 
-    inline Vec<_N>
-    operator+(const Vec<_N>& r) const
+    inline Vec
+    operator+(const Vec& r) const
     {
-      Vec<_N> out (*this);
+      Vec out (*this);
       out += r;
 
       return out;
     }
 
-    inline Vec<_N>&
-    operator+=(const Vec<_N>& r)
+    inline Vec&
+    operator+=(const Vec& r)
     {
       for ( size_type i = 0; i < _N; ++i )
 	_M_val[i] += r._M_val[i];
@@ -332,10 +336,10 @@ namespace spt
     }
 
 
-    inline Vec<_N>
+    inline Vec
     operator-() const
     {
-      Vec<_N> o ( *this );
+      Vec o ( *this );
 
       for ( size_type i = 0; i < _N; ++i )
 	o._M_val[i] = -_M_val[i];
@@ -345,18 +349,18 @@ namespace spt
 
 
 
-    inline Vec<_N>
-    operator-(const Vec<_N>& r) const
+    inline Vec
+    operator-(const Vec& r) const
     {
-      Vec<_N> o ( *this );
+      Vec o ( *this );
       o -= r;
 
       return o;
     }
 
 
-    inline Vec<_N>&
-    operator-=(const Vec<_N>& r)
+    inline Vec&
+    operator-=(const Vec& r)
     {
       for ( size_type i = 0; i < _N; ++i )
 	_M_val[i] -= r._M_val[i];
@@ -368,16 +372,16 @@ namespace spt
     }
 
 
-    inline Vec<_N>
-    operator*(scalar_t r) const
+    inline Vec
+    operator*(value_type r) const
     {
-      Vec<_N> out ( *this );
+      Vec out ( *this );
       out *= r;
       return out;
     }
 
-    inline Vec<_N>&
-    operator*=(scalar_t r)
+    inline Vec&
+    operator*=(value_type r)
     {
       for ( size_type i = 0; i < _N; ++i )
 	_M_val[i] *= r;
@@ -390,17 +394,17 @@ namespace spt
 
 
 
-    inline Vec<_N>
-    operator/(scalar_t r) const
+    inline Vec
+    operator/(value_type r) const
     {
-      Vec<_N> o ( *this );
+      Vec o ( *this );
       o /= r;
 
       return o;
     }
 
-    inline Vec<_N>&
-    operator/=(scalar_t r)
+    inline Vec&
+    operator/=(value_type r)
     {
       for ( size_type i = 0; i < _N; ++i )
 	_M_val[i] /= r;
@@ -412,10 +416,10 @@ namespace spt
     }
 
 
-    inline scalar_t
-    dot(const Vec<_N>& r) const
+    inline value_type
+    dot(const Vec& r) const
     {
-      scalar_t o(0);
+      value_type o(0);
       for ( size_type i = 0; i < _N; ++i )
 	o += _M_val[i] * r._M_val[i];
 
@@ -423,24 +427,24 @@ namespace spt
     }
 
     template < typename _VectorType >
-    inline scalar_t
+    inline value_type
     dot(const _VectorType& other, bool include_missing = false) const
     {
-      scalar_t o ( 0 );
+      value_type o ( 0 );
       for ( size_type i ( 0 ); i < ( include_missing ? std::max(N, _VectorType::N) : std::min(N, _VectorType::N) ); ++i )
 	o += ( i < N ? _M_val[i] : S_LITERAL(1.0) ) * ( i < _VectorType::N ? other[i] : S_LITERAL(1.0) );
       return o;
     }
 
 
-    inline const scalar_t*
+    inline const value_type*
     val() const
     {
-      return const_cast<scalar_t*>(_M_val);
+      return const_cast<value_type*>(_M_val);
     }
 
     inline bool
-    operator < (const Vec<_N>& v) const
+    operator < (const Vec& v) const
     {
       bool
 	hN ( hasNaN() ),
@@ -457,31 +461,53 @@ namespace spt
       return false;
     }
 
+    bool isFinite() const
+    {
+      static_assert(std::is_floating_point<value_type>::value,
+		    "Invalid use of member ‘isFinite’ on non-floating point Vec type");
+      for ( size_type i ( 0 ); i < _N; ++i )
+	if ( ! std::isfinite(_M_val[i]) )
+	  return false;
+      return true;
+    }
+
     bool hasNaN() const
     {
+      static_assert(std::is_floating_point<value_type>::value,
+		    "Invalid use of member ‘hasNaN’ on non-floating point Vec type");
       for ( size_type i ( 0 ); i < _N; ++i )
 	if ( std::isnan(_M_val[i]) )
 	  return true;
       return false;
     }
       
+    bool hasInfinite() const
+    {
+      static_assert(std::is_floating_point<value_type>::value,
+		    "Invalid use of member ‘hasInfinite’ on non-floating point Vec type");
+      for ( size_type i ( 0 ); i < _N; ++i )
+	if ( std::fpclassify(_M_val[i]) == FP_INFINITE )
+	  return true;
+      return false;
+    }
 
   protected:
 
-    scalar_t _M_val[_N];
+    value_type _M_val[_N];
 
 #ifdef SPT_VECT_CACHE_MAGNITUDE
-    mutable scalar_t _M_mag_cached;
+    mutable value_type _M_mag_cached;
     mutable bool _M_recalc_mag;
-    mutable scalar_t _M_mag2_cached;
+    mutable value_type _M_mag2_cached;
     mutable bool _M_recalc_mag2;
 #endif
   };
 
-template < size_t _N >
-spt::Vec<_N>
-operator*(const scalar_t s, const spt::Vec<_N>& v)
+  template < size_t _N, typename _ValueType, typename _FactorType >
+spt::Vec<_N, _ValueType>
+operator*(const _FactorType s, const spt::Vec<_N, _ValueType>& v)
 {
+  static_assert(std::is_arithmetic<_FactorType>::value, "Invalid coefficient type for vector multiplication");
   return v * s;
 }
 }
@@ -489,9 +515,9 @@ operator*(const scalar_t s, const spt::Vec<_N>& v)
 
 /**  Shift-append operator for output of an spt::Vec<_N> to an STL stream.
  */
-template < size_t _N >
+template < size_t _N, typename _ValueType >
 std::basic_ostream<char>&
-operator << (std::basic_ostream<char>& os, const spt::Vec<_N>& v)
+operator << (std::basic_ostream<char>& os, const spt::Vec<_N, _ValueType>& v)
 {
   os << "{ " << v[0];
   for ( size_t i = 1; i < _N; ++i )
