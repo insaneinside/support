@@ -163,15 +163,7 @@ public:
       m_sdata ( source.m_sdata ),
       m_range ( source.m_range.startIndex + range.startIndex, source.m_range.startIndex + range.endIndex )
   {
-  }
-
-  /**  Substring reference. */
-  explicit inline String(const String& s, size_type startIndex, size_type endIndex)
-    : RefCountedObject ( ),
-      m_sdata ( s.m_sdata ),
-      m_range ( s.m_range.startIndex + startIndex, s.m_range.startIndex + endIndex )
-  {
-    
+    source.assert_in_range(range);
   }
 
   /** Read-only constructor. Does not free, copies on write.
@@ -323,8 +315,13 @@ public:
   inline void
   assert_in_range(const range_type& r) const
   {
-    if ( r.startIndex > m_range.endIndex || m_range.startIndex + r.length() > m_range.endIndex )
-      throw std::out_of_range("Given range does not fit within range of current string");
+    if ( r.length() > length() )
+      throw std::out_of_range("Given range does not fit within implicit range of current string");
+    else if ( r.endIndex >= length() + 1 )
+      {
+	std::cerr << "implicit: " << m_range << "; relative given: " << r << std::endl;
+	throw std::out_of_range("Given range exceeds implicit range window of current string");
+      }
   }
 
   /** Checked-index element access. */
@@ -372,7 +369,7 @@ public:
 			       + boost::lexical_cast<std::string>(m_range.startIndex) + ","
 			       + boost::lexical_cast<std::string>(m_range.endIndex) + "]; data length = "
 			       + boost::lexical_cast<std::string>(m_sdata->capacity) + ")");
-  }
+      }
     m_sdata->ensureWritable();
     m_sdata->resize(this->length() + s.length() + 1);
     strncpy(m_sdata->data + this->length(), s.m_sdata->data, s.length());
@@ -385,6 +382,41 @@ public:
     return m_range.startIndex == 0 && m_range.endIndex == m_sdata->capacity;
   }
 
+
+  /** Check if this is a substring created from the given String.
+   *
+   * @param s (Potential) parent String.
+   *
+   * @return @c true if @c *this and @p s refer to the same data, and
+   * the implicit range of @p s contains this string's implicit range.
+   */
+  inline bool
+  isSubstringOf(const String& s) const
+  {
+    return s.m_sdata == m_sdata && s.m_range.contains(m_range);
+  }
+
+
+  /** Get the range of @p substring relative to this String.
+   *
+   * @param substr Substring of @c *this.
+   *
+   * @pre @p substr was created as a substring of @c *this, i.e.,
+   * <code>substr.isSubstringOf(*this) returns <code>true</code>
+   *
+   * @return A range corresponding to the relative range of @p substr on @c *this such that
+   * <code>this->substring(this->getSubstringRange(substr)) == substr</code>.
+   */
+  inline range_type
+  getSubstringRange(const String& substr) const
+  {
+    if ( ! substr.isSubstringOf(*this) )
+      throw std::logic_error("`substr' is not a substring of `*this'!");
+
+    return range_type(m_range.startIndex + substr.m_range.startIndex, m_range.startIndex + substr.m_range.endIndex);
+  }
+
+
   /** Collation-order comparator method.  This allows String to be
    *  used inside of STL containers.
    *
@@ -396,6 +428,9 @@ public:
   inline bool
   operator < (const String& s) const
   {
+    /* Since strcoll relies on nul-terminated buffers (and String does
+       not use those -- ever), we must copy the data in each string's
+       range. */
     char* buf ( static_cast<char*>(alloca(this->length() + s.length() + 2)) );
     char* sbuf ( buf + this->length() + 1 );
 
