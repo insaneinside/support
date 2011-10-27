@@ -177,17 +177,17 @@ extern "C" {
   #define SC_LOG2E	M_LOG2E
   #define SC_LOG10E	M_LOG10E
 
-  #define SC_LN2        M_LN2    
-  #define SC_LN10       M_LN10   
+  #define SC_LN2        M_LN2
+  #define SC_LN10       M_LN10
   #define SC_3PI_2	(3 * M_PI_2)
   #define SC_2PI	(2 * M_PI)
-  #define SC_PI         M_PI     
-  #define SC_PI_2       M_PI_2   
-  #define SC_PI_4       M_PI_4   
-  #define SC_1_PI       M_1_PI   
-  #define SC_2_PI       M_2_PI   
+  #define SC_PI         M_PI
+  #define SC_PI_2       M_PI_2
+  #define SC_PI_4       M_PI_4
+  #define SC_1_PI       M_1_PI
+  #define SC_2_PI       M_2_PI
   #define SC_2_SQRTP	M_2_SQRTP
-  #define SC_SQRT2      M_SQRT2  
+  #define SC_SQRT2      M_SQRT2
   #define SC_SQRT1_2	M_SQRT1_2
 
 #elif defined(S_TYPE_LONG_DOUBLE)
