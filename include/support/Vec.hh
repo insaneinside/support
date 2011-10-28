@@ -420,11 +420,11 @@ namespace spt
 
     template < typename _VectorType >
     inline value_type
-    dot(const _VectorType& other, bool include_missing = false) const
+    dot(const _VectorType& other, scalar_t missingValue = S_LITERAL(0.0)) const
     {
       value_type o ( 0 );
-      for ( size_type i ( 0 ); i < ( include_missing ? std::max(N, _VectorType::N) : std::min(N, _VectorType::N) ); ++i )
-	o += ( i < N ? _M_val[i] : S_LITERAL(1.0) ) * ( i < _VectorType::N ? other[i] : S_LITERAL(1.0) );
+      for ( size_type i ( 0 ); i < ( S_NONZERO(missingValue) ? std::max(N, _VectorType::N) : std::min(N, _VectorType::N) ); ++i )
+	o += ( i < N ? _M_val[i] : missingValue ) * ( i < _VectorType::N ? other[i] : missingValue );
       return o;
     }
 
