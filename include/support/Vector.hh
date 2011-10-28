@@ -56,10 +56,11 @@ namespace spt
 
     template < size_type _N >
     inline Vector&
-    operator =(const Vec<_N>& other)
+    operator =(const Vec<_N>& v)
     {
-      for ( unsigned int i ( 0 ); i < N && i < _N; ++i )
-	_M_val[i] = other[i];
+      for ( size_type i ( 0 ); i < N; ++i )
+	_M_val[i] = i < _N ? v[i] : S_LITERAL( 0.0 );
+
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
       _M_recalc_mag2 = true;
