@@ -32,7 +32,7 @@ namespace spt
 
     inline
     Vec(const Vec& v)
-      : _M_val { 0 }
+      : _M_val ( )
 #ifdef SPT_VECT_CACHE_MAGNITUDE
         ,_M_mag_cached(v._M_mag_cached), _M_recalc_mag(v._M_recalc_mag),
 	_M_mag2_cached(v._M_mag2_cached), _M_recalc_mag2(v._M_recalc_mag2)
@@ -43,33 +43,25 @@ namespace spt
     }
 
 
-    inline
-    Vec(const value_type* v)
-      : _M_val { }
-#ifdef SPT_VECT_CACHE_MAGNITUDE
-        ,_M_mag_cached(0), _M_recalc_mag(true), _M_mag2_cached(0), _M_recalc_mag2(true)
-#endif
-    {
-      for ( size_type i ( 0 ); i < _N; ++i )
-	_M_val[i] = v[i];
-    }
-
-
-    template < typename... _S >
+    template < typename... _S>
     Vec(_S... values)
       : _M_val { static_cast<value_type>(values)... }
 #ifdef SPT_VECT_CACHE_MAGNITUDE
         ,_M_mag_cached(0), _M_recalc_mag(true), _M_mag2_cached(0), _M_recalc_mag2(true)
 #endif
     {
-      /* va_list ap;
-       * va_start(ap, s0);
-       * 
-       * _M_val[0] = s0;
-       * for ( size_type i ( 1 ); i < _N; ++i )
-       * 	_M_val[i] = static_cast<value_type>(va_arg(ap, double));
-       * 
-       * va_end(ap); */
+    }
+
+    template < typename _Tp = int >
+    Vec(std::initializer_list<_Tp> values)
+      : _M_val ( )
+#ifdef SPT_VECT_CACHE_MAGNITUDE
+        ,_M_mag_cached(0), _M_recalc_mag(true), _M_mag2_cached(0), _M_recalc_mag2(true)
+#endif
+    {
+      size_type i ( 0 );
+      for ( const _Tp* v ( values.begin() ); v != values.end(); ++v, ++i )
+	_M_val[i] = static_cast<value_type>(*v);
     }
 
 
