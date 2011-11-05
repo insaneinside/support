@@ -35,7 +35,7 @@ struct RefCountedObject
    *
    * @throws runtime_error if object's reference count is non-zero.
    */
-  inline virtual ~RefCountedObject()
+  inline virtual ~RefCountedObject() throw ( std::runtime_error )
   {
     if ( refCount > 0 )
       throw std::runtime_error("In RefCountedObject::~RefCountedObject(): destructor called with refCount > 0");
