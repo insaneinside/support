@@ -184,7 +184,14 @@ namespace spt
     value_type
     compute_mag() const
     {
-      return S_SQRT( mag2() );
+      return
+#ifdef __MINGW32__
+	S_SQRT(mag2());
+#else
+	_N == 2
+	? hypot(_M_val[0], _M_val[1])
+	: S_SQRT( mag2() );
+#endif
     }
 
     value_type
