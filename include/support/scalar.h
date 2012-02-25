@@ -41,6 +41,7 @@ extern "C" {
   #define S_SIGNBIT(n) signbit(n)
 #endif
 
+#define S_SIGN(n)	(S_SIGNBIT(n) ? -1 : 1)
 #ifdef S_TYPE_FLOAT
 
   #define S_EPSILON	FLT_EPSILON
