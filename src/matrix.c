@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+#include <support/scalar.h>
 #include <stdlib.h>
 #include <stdio.h>		/* for prinf() */
 #include <string.h>		/* for memset() */
