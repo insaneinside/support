@@ -4,15 +4,9 @@
 #include <support/support-config.h>
 #include <support/macro.h>
 
-#ifdef __cplusplus
-#include <cmath>
-#include <cfloat>
-#include <complex>
-#else
 #include <math.h>
 #include <float.h>
 #include <complex.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
