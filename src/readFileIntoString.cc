@@ -14,6 +14,8 @@ namespace spt
   std::pair<char*,size_t>
   readFileIntoString(const char* pathToFile, spt_context_t* errorContext)
   {
+    if ( ! pathToFile )
+      return std::make_pair<char*,size_t>(NULL, 0);
     size_t bufAllocSize ( BUFSIZ );
     int fd ( -1 );
 
