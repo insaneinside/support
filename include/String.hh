@@ -10,6 +10,7 @@
 #include <StringRange.hh>
 #include <boost/lexical_cast.hpp>
 
+#include <IndexRange.hh>
 #include <RefCountedObject.hh>
 #include <StringData.hh>
 
@@ -36,7 +37,7 @@ public:
   /** a la std::string::npos */
   static const size_type npos = static_cast<size_type>(-1);
 
-  typedef StringRange<size_type, npos> range_type;
+  typedef IndexRange<size_type, npos> range_type;
 
 
   inline String(const data_type::reference_type& sdata, const range_type& range)
