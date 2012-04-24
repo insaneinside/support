@@ -47,8 +47,8 @@ timeutil_elapsed(struct timeval* t1, struct timeval* t2)
 #define macro_single_statement(x) do { x } while ( 0 )
 
 #define timeutil_init_mark_variables()                                  \
-  struct timeutil_data timeutil_data_instance =                         \
-    { { { 0, 0}, 0, 0 }, { { 0, 0}, 0, 0 }, 0, 0, 0 };                  \
+  struct timeutil_data timeutil_data_instance;				\
+  memset(&timeutil_data_instance, 0, sizeof(struct timeutil_data));	\
   timeutil_data_instance.next_te = &(timeutil_data_instance.te_a);      \
   timeutil_data_instance.prev_te = &(timeutil_data_instance.te_b)
 
