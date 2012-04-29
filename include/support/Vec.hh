@@ -52,15 +52,14 @@ namespace spt
     {
     }
 
-    template < typename _Tp = int >
-    Vec(std::initializer_list<_Tp> values)
+    Vec(std::initializer_list<_ValueType> values)
       : _M_val ( )
 #ifdef SPT_VECT_CACHE_MAGNITUDE
         ,_M_mag_cached(0), _M_recalc_mag(true), _M_mag2_cached(0), _M_recalc_mag2(true)
 #endif
     {
       size_type i ( 0 );
-      for ( const _Tp* v ( values.begin() ); v != values.end(); ++v, ++i )
+      for ( const _ValueType* v ( values.begin() ); v != values.end(); ++v, ++i )
 	_M_val[i] = static_cast<value_type>(*v);
     }
 
