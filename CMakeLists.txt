@@ -97,11 +97,11 @@ set(SPT_CONFIG_HEADER_DEST
 mark_as_advanced(FORCE SPT_CONFIG_HEADER_SOURCE SPT_CONFIG_HEADER_DEST)
 configure_file("${SPT_CONFIG_HEADER_SOURCE}" "${SPT_CONFIG_HEADER_DEST}" @ONLY)
 
-set(SUPPORT_INCLUDE_DIRS
+set(Support_INCLUDE_DIRS
   "${Support_SOURCE_DIR}/include" "${Support_BINARY_DIR}/include"
   CACHE STRING "libsupport include directories"
   )
-include_directories(${SUPPORT_INCLUDE_DIRS})
+include_directories(${Support_INCLUDE_DIRS})
 
 
 if(SPT_INSTALL)
