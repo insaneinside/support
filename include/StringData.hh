@@ -44,15 +44,8 @@ struct StringData
   }
 #endif
 
-  explicit inline StringData(const element_type* s, size_type knownCapacity = 0)
-    : RefCountedObject ( ),
-      data ( const_cast<element_type*>(s) ),
-      capacity ( knownCapacity != 0 ? knownCapacity : ( s == NULL ? 0 : strlen(s) ) ),
-      ownsData ( false ),
-      freeFunction ( NULL )
-  {
-  }
-
+  /** Allocating constructor.  Allocates and initializes the specified number of elements.
+   */
   explicit inline StringData(size_type _capacity)
     : RefCountedObject ( ),
       data ( static_cast<element_type*>(calloc(_capacity, sizeof(_T))) ),
@@ -62,10 +55,10 @@ struct StringData
   {
   }
 
-  explicit inline StringData(element_type* s, size_type knownCapacity, bool takeOwnership = false, FreeFunction _freeFunction = &free)
+  explicit inline StringData(const element_type* s, size_type knownCapacity = 0, bool takeOwnership = false, FreeFunction _freeFunction = &free)
     : RefCountedObject ( ),
-      data ( s ),
-      capacity ( knownCapacity ),
+      data ( const_cast<element_type*>(s) ),
+      capacity ( knownCapacity != 0 ? knownCapacity : ( s == NULL ? 0 : strlen(s) ) ),
       ownsData ( takeOwnership ),
       freeFunction ( _freeFunction )
   {
