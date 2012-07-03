@@ -108,7 +108,7 @@ public:
   {
   }
 
-  inline ~String()
+  inline ~String() throw ( std::runtime_error )
   {
     m_sdata.reset();
   }
@@ -212,6 +212,20 @@ public:
 
     return npos;
   }
+
+  /** Determine whether the given range is valid on this string.
+   *
+   * @param r Range to test
+   *
+   * @return @c true if @p r specifies an index range within the length of this string, and @c
+   *   false otherwise.
+   */
+  inline bool
+  range_is_valid(const range_type& r) const
+  {
+    return r.length() <= length() && r.endIndex < length() + 1;
+  }
+  
 
   /** Ensure that the given range, relative to the current string's
    *    range, is within bounds.
