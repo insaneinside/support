@@ -202,7 +202,7 @@ namespace spt
 
 template < typename _index_type, _index_type _bad_index >
 inline std::basic_ostream<char>&
-operator << (std::basic_ostream<char>& os, const IndexRange<_index_type, _bad_index>& r)
+operator << (std::basic_ostream<char>& os, const spt::IndexRange<_index_type, _bad_index>& r)
 {
 #ifdef SWIG
   os.put('[');

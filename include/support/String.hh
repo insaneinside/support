@@ -798,8 +798,8 @@ namespace spt
   };
 }
 
-inline String::size_type
-operator - (const String::element_type* a, const String& b)
+inline spt::String::size_type
+operator - (const spt::String::element_type* a, const spt::String& b)
 {
   return a - b.data();
 }
