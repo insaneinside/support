@@ -174,7 +174,7 @@ namespace spt
     inline void
     set(const Vector& r)
     {
-      *this = r;
+      SV_COPY(_M_val, r._M_val);
 #ifdef SPT_VECT_CACHE_MAGNITUDE
       _M_recalc_mag = true;
       _M_recalc_mag2 = true;
