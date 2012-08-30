@@ -798,6 +798,17 @@ namespace spt
   };
 }
 
+/** std::hash specialization for spt::String */
+namespace std {
+  template <> struct hash<spt::String> : public __hash_base<size_t, spt::String&>
+  {
+    size_t operator()(const spt::String& _s) const noexcept
+    {
+      return std::_Hash_impl::hash(_s.data(), _s.length());
+    }
+  };
+}
+
 inline spt::String::size_type
 operator - (const spt::String::element_type* a, const spt::String& b)
 {
