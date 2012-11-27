@@ -42,6 +42,33 @@ namespace spt
       SV_COPY(_M_val, v._M_val);
     }
 
+    const Vector&
+    operator=(const Vector& v)
+    {
+      SV_COPY(_M_val, v._M_val);
+
+#ifdef SPT_VECT_CACHE_MAGNITUDE
+      _M_mag_cached = v._M_mag_cached;
+      _M_mag2_cached = v._M_mag2_cached;
+      _M_recalc_mag = true;
+      _M_recalc_mag2 = true;
+#endif
+      return *this;
+    }
+
+    const Vector&
+    operator=(Vector&& v)
+    {
+      SV_COPY(_M_val, v._M_val);
+
+#ifdef SPT_VECT_CACHE_MAGNITUDE
+      _M_mag_cached = std::move( v._M_mag_cached );
+      _M_mag2_cached = std::move( v._M_mag2_cached );
+      _M_recalc_mag = true;
+      _M_recalc_mag2 = true;
+#endif
+      return *this;
+    }
 
     template < size_type _N >
     explicit Vector(const Vec<_N>& v)
