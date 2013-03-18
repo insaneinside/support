@@ -13,14 +13,14 @@
 
 namespace spt
 {
-  /** Base class with reference counter, for use with intrusive pointer
-   *  types.  Functions for use with boost::intrusive_ptr are included.
+  /** Base class with reference counter, for use with intrusive pointer types.  Functions for
+   *  use with boost::intrusive_ptr are included.
    *
    * When @em storing any sort of reference to a heap-allocated,
    * <code>%RefCountedObject</code>-derived object, use
-   * <code>boost::intrusive_ptr&lt;DerivedType&gt;</code>.  Note that the
-   * intrusive pointer type is only necessary when storing, as opposed to using,
-   * <code>%RefCountedObject</code>-derived objects.
+   * <code>boost::intrusive_ptr&lt;DerivedType&gt;</code>.  Note that the intrusive pointer type
+   * is only necessary when storing, as opposed to using, <code>%RefCountedObject</code>-derived
+   * objects.
    *
    * @sa RefTraits, intrusive_ptr_add_ref, intrusive_ptr_release
    */
@@ -51,8 +51,8 @@ namespace spt
 
 /** Increments the reference count of a RefCountedObject.
  *
- * @warning This function is provided for integration with boost::intrusive_ptr,
- * and is not intended to be called directly.
+ * @warning This function is provided for integration with boost::intrusive_ptr, and is not
+ * intended to be called directly.
  */
 inline void
 intrusive_ptr_add_ref(spt::RefCountedObject* __rco)
@@ -60,11 +60,11 @@ intrusive_ptr_add_ref(spt::RefCountedObject* __rco)
   __rco->refCount++;
 }
 
-/** Decrements the reference count of a RefCountedObject, and deletes the object
- * if its reference count is zero.
+/** Decrements the reference count of a RefCountedObject, and deletes the object if its
+ * reference count is zero.
  *
- * @warning This function is provided for integration with boost::intrusive_ptr,
- * and is not intended to be called directly.
+ * @warning This function is provided for integration with boost::intrusive_ptr, and is not
+ * intended to be called directly.
  */
 inline void
 intrusive_ptr_release(spt::RefCountedObject* __rco)
