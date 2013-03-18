@@ -16,7 +16,9 @@ namespace spt
   struct StringData
     : RefCountedObject
   {
+    /** Element (character) type. */
     typedef _T element_type;
+    /** Index and size type. */
     typedef size_t size_type;
     typedef boost::intrusive_ptr< StringData<_T,_U> > reference_type;
     typedef void (*FreeFunction) (_U*);
@@ -68,6 +70,8 @@ namespace spt
     {
     }
 
+    /** Destructor.  Calls freeFunction on data if data is non-@c NULL and ownsData is @c true.
+     */
     inline virtual ~StringData() throw ( std::runtime_error )
     {
       if ( ownsData )
