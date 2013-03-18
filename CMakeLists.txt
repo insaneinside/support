@@ -24,6 +24,15 @@ macro(option_maybe var doc default)
   endif(NOT DEFINED "${var}")
 endmacro(option_maybe)
 
+# Convenience function we use to convert CMake's "ON"/"OFF" values to proper C #define values.
+macro(bool_to_integer VAR)
+  if(${VAR})
+    set(${VAR} 1)
+  else(${VAR})
+    set(${VAR})
+  endif(${VAR})
+endmacro(bool_to_integer)
+
 # Compile-time options
 option_maybe(SPT_ENABLE_LOG_CONTEXT "Enable support for logging contexts" ON)
 option_maybe(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
@@ -38,41 +47,16 @@ option_maybe(SPT_INSTALL "Install the Support library and headers." OFF)
 option_maybe(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
 option_maybe(SPT_BUILD_STATIC "Build a static version of the library" ON)
 
-if(SPT_ENABLE_LOG_CONTEXT)
-  set(SPT_ENABLE_LOG_CONTEXT 1)
-else(SPT_ENABLE_LOG_CONTEXT)
-  set(SPT_ENABLE_LOG_CONTEXT)
-endif(SPT_ENABLE_LOG_CONTEXT)
-
-if(SPT_VECT_CACHE_MAGNITUDE)
-  set(SPT_VECT_CACHE_MAGNITUDE 1)
-else(SPT_VECT_CACHE_MAGNITUDE)
-  set(SPT_VECT_CACHE_MAGNITUDE)
-endif(SPT_VECT_CACHE_MAGNITUDE)
-
-if(SPT_ENABLE_CONSISTENCY_CHECKS)
-  set(SPT_ENABLE_CONSISTENCY_CHECKS 1)
-else(SPT_ENABLE_CONSISTENCY_CHECKS)
-  set(SPT_ENABLE_CONSISTENCY_CHECKS)
-endif(SPT_ENABLE_CONSISTENCY_CHECKS)
-
-if(SPT_CONTEXT_ENABLE_DESCRIPTION)
-  set(SPT_CONTEXT_ENABLE_DESCRIPTION 1)
-else(SPT_CONTEXT_ENABLE_DESCRIPTION)
-  set(SPT_CONTEXT_ENABLE_DESCRIPTION)
-endif(SPT_CONTEXT_ENABLE_DESCRIPTION)
-
-if(SPT_CONTEXT_ENABLE_CALLBACKS)
-  set(SPT_CONTEXT_ENABLE_CALLBACKS 1)
-else(SPT_CONTEXT_ENABLE_CALLBACKS)
-  set(SPT_CONTEXT_ENABLE_CALLBACKS)
-endif(SPT_CONTEXT_ENABLE_CALLBACKS)
-
-if(SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS)
-  set(SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS 1)
-else(SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS)
-  set(SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS)
-endif(SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS)
+foreach(var
+    SPT_ENABLE_LOG_CONTEXT
+    SPT_VECT_CACHE_MAGNITUDE
+    SPT_ENABLE_CONSISTENCY_CHECKS
+    SPT_CONTEXT_ENABLE_DESCRIPTION
+    SPT_CONTEXT_ENABLE_CALLBACKS
+    SPT_CONTEXT_ENABLE_OUTPUT_HANDLERS
+    )
+  bool_to_integer(${var})
+endforeach(var)
 
 set(SPT_SCALAR_TYPE_DEFINE "" CACHE INTERNAL "Symbol to define for scalar_t type.")
 
