@@ -177,13 +177,13 @@ extern "C"
      *  debugging.
      * @internal
      */
-    #define SPT_CONTEXT_MAGIC  ( ( 'M' << 3 ) + ( 'C' << 2 ) + ( 'X' << 1 ) + 'T' )
+    #define SPT_CONTEXT_MAGIC  ( ( 'M' << 24 ) + ( 'C' << 16 ) + ( 'X' << 8 ) + 'T' )
 
     /** Magic number for context parse-spec structures.  This is useful during
      *  debugging.
      * @internal
      */
-    #define SPT_CONTEXT_PARSE_SPEC_MAGIC ( ( 'S' << 3 ) + ( 'P' << 2 ) + ( 'E' << 1 ) + 'C' )
+    #define SPT_CONTEXT_PARSE_SPEC_MAGIC ( ( 'S' << 24 ) + ( 'P' << 16 ) + ( 'E' << 8 ) + 'C' )
 
     /** Check if the argument is a well-initialized log context.
      * @internal

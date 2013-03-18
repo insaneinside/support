@@ -32,9 +32,9 @@ extern "C"
 
 #ifdef SPT_ENABLE_CONSISTENCY_CHECKS
 
-#define DLLIST_MAGIC  ( ( 'D' << 3 ) + ( 'L' << 2 ) + ( 'S' << 1 ) + 'T' )
+#define DLLIST_MAGIC  ( ( 'D' << 24 ) + ( 'L' << 16 ) + ( 'S' << 8 ) + 'T' )
 #define DLLIST_IS_NODE(n) \
-  ( n && *((uint32_t*) n + offsetof(dllist_t, magic)) == DLLIST_MAGIC )
+  ( n && ((uint32_t*) n)->magic == DLLIST_MAGIC )
 
 #else
 
