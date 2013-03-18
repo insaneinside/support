@@ -8,10 +8,11 @@
 #include <algorithm>
 #include <stdexcept>
 
+#include <support/support-config.h>
 #include <support/IndexRange.hh>
 #include <support/StringData.hh>
 
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
   #include <support/RefCountedObject.hh>
 #endif
 
@@ -35,7 +36,7 @@ namespace spt
    *  the same data.
    */
   class String
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
     : public RefCountedObject
 #endif
   {
@@ -92,7 +93,7 @@ namespace spt
 
     inline String()
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( NULL ),
@@ -102,7 +103,7 @@ namespace spt
 
     inline String(data_type&& data)
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( data.capacity > 0 ? new data_type(std::move(data)) : NULL ),
@@ -113,7 +114,7 @@ namespace spt
 
     inline String(const data_type::reference_type& sdata)
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( sdata ),
@@ -124,7 +125,7 @@ namespace spt
 
     inline String(const data_type::reference_type& sdata, const range_type& range)
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( sdata ),
@@ -135,7 +136,7 @@ namespace spt
     /** Move constructor. */
     inline String(data_type&& sdata, range_type&& range)
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( range.length() > 0 ? new data_type(std::move(sdata)) : NULL),
@@ -146,7 +147,7 @@ namespace spt
 
     inline String(const element_type* s, size_type length)
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( length > 0 && s != NULL ? new data_type(s, length) : NULL),
@@ -156,7 +157,7 @@ namespace spt
 
     inline String(const String& source)
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( source.m_sdata ),
@@ -166,7 +167,7 @@ namespace spt
 
     inline String(const String& source, const range_type& range)
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( source.m_sdata ),
@@ -179,7 +180,7 @@ namespace spt
      */
     inline String(const char* s)
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( s ? new data_type(s) : NULL),
@@ -191,7 +192,7 @@ namespace spt
      */
     inline String(String&& s)
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( std::move(s.m_sdata) ),
@@ -204,7 +205,7 @@ namespace spt
     /** @p n copies of char  @p c, followed by <code>'\\0'</code>. */
     explicit inline String(size_type count, element_type c)
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( count > 0 ? new data_type(count + 1) : NULL ),
@@ -217,7 +218,7 @@ namespace spt
     /** empty, with space for @p capacity characters (not including terminating null)  */
     explicit inline String(size_type capacity)
       :
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
       RefCountedObject ( ),
 #endif
       m_sdata ( capacity > 0 ? new data_type(capacity) : NULL ),
@@ -226,7 +227,7 @@ namespace spt
     }
 
     inline ~String()
-#ifdef STRING_USE_REFCOUNTED_OBJECT
+#ifdef SPT_STRING_USE_REFCOUNTED_OBJECT
     throw ( std::runtime_error )
 #endif
     {

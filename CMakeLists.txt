@@ -34,6 +34,7 @@ macro(bool_to_integer VAR)
 endmacro(bool_to_integer)
 
 # Compile-time options
+option_maybe(SPT_STRING_USE_REFCOUNTED_OBJECT "String inherits from RefCountedObject" OFF)
 option_maybe(SPT_ENABLE_LOG_CONTEXT "Enable support for logging contexts" ON)
 option_maybe(SPT_VECT_CACHE_MAGNITUDE "Cache the calculated magnitude of vectors, when possible" ON)
 option_maybe(SPT_ENABLE_CONSISTENCY_CHECKS "Enable run-time consistency checks" ON)
@@ -48,6 +49,7 @@ option_maybe(SPT_BUILD_SHARED "Build a shared version of the library" OFF)
 option_maybe(SPT_BUILD_STATIC "Build a static version of the library" ON)
 
 foreach(var
+    SPT_STRING_USE_REFCOUNTED_OBJECT
     SPT_ENABLE_LOG_CONTEXT
     SPT_VECT_CACHE_MAGNITUDE
     SPT_ENABLE_CONSISTENCY_CHECKS
