@@ -119,7 +119,7 @@ timeutil_elapsed(struct timeval* t1, struct timeval* t2)
 #define timeutil_beginf(fmt, ...)                                       \
   macro_single_statement(                                               \
     timeutil_data_instance.lhnl = 0;                                    \
-    fprintf(stderr, "-- "fmt"... ", __VA_ARGS__);                       \
+    fprintf(stderr, "-- " fmt "... ", __VA_ARGS__);			\
     timeutil_update_time_value(); timeutil_update_last_time_value();    \
                                                                         )
 
