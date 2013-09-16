@@ -3,13 +3,15 @@
  * Reference-counted object class and supporting structures and
  * functions for use with boost::intrusive_ptr.
  *
+ * @copyright 2011-2013 Collin J. Sutton.  All rights reserved.
+ *
  */
 #ifndef support_RefCountedObject_hh
 #define support_RefCountedObject_hh 1
 
 #include <stdexcept>
 #include <cstdint>
-
+#include <cstdlib>
 
 namespace spt
 {
@@ -28,22 +30,13 @@ namespace spt
   {
     /** Constructor. Initializes the object's reference count to zero.
      */
-    inline RefCountedObject()
-      : refCount ( 0 )
-    {
-    }
+    RefCountedObject();
 
     /** Destructor.
      *
      * @throws runtime_error if object's reference count is non-zero.
      */
-    inline virtual ~RefCountedObject() throw ( std::runtime_error )
-    {
-      if ( refCount > 0 )
-	throw std::runtime_error("In RefCountedObject::~RefCountedObject(): destructor called with refCount > 0");
-      else if ( refCount < 0 )
-	throw std::runtime_error("In RefCountedObject::~RefCountedObject(): destructor called with refCount < 0");
-    }
+    virtual ~RefCountedObject() throw ( std::runtime_error );
 
     ssize_t refCount;
   };
@@ -87,8 +80,7 @@ namespace spt
   template < typename _T >
   struct RefTraits
   {
-    /** Type used when storing a reference to an object.  We use a
-     *  tracked-pointer because stored references are not   */
+    /** Type used when storing a reference to an object. */
     typedef boost::intrusive_ptr<_T> stored_ref;
     typedef const boost::intrusive_ptr<_T> const_stored_ref;
 
