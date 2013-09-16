@@ -28,6 +28,7 @@ set(support_SOURCES
   vector.c
   matrix.c
   readFileIntoString.cc
+  RefCountedObject.cc
   )
 
 if(SPT_ENABLE_LOG_CONTEXT)
