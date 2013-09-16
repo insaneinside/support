@@ -34,7 +34,7 @@ extern "C"
 
 #define DLLIST_MAGIC  ( ( 'D' << 24 ) + ( 'L' << 16 ) + ( 'S' << 8 ) + 'T' )
 #define DLLIST_IS_NODE(n) \
-  ( n && ((uint32_t*) n)->magic == DLLIST_MAGIC )
+  ( n && *((uint32_t*) n) == DLLIST_MAGIC )
 
 #else
 
