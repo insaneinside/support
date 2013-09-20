@@ -30,22 +30,22 @@ with a dead-simple macro-based interface.
 	  /* ... */
 	}
 
-All `timeutil` macros have been carefully written to avoid including the time taken by their own
+All timeutil macros have been carefully written to avoid including the time taken by their own
 I/O calls.
 
 There are additional macros that can be used to customize the type and content of messages
-printed by `timeutil`; see the header file for full details.
+printed by timeutil; see the header file for full details.
 
 
 ## Context-based Hierarchical Logging
 
 Inspired by the fine-grained logging control present in [Wine](http://www.winehq.org/), I set
 about building a similar stand-alone system for my own projects.  The end result, however,
-proved suited to much larger projects than I typically write.  `spt::Context` (more properly
-`spt_context`, since it's written in C) implements support for hierarchies of contexts into
+proved suited to much larger projects than I typically write.  spt::Context (more properly
+spt_context, since it's written in C) implements support for hierarchies of contexts into
 which messages are logged, and an inheritance-based approach to controlling them.
 
-`spt::Context` currently has some bugs related to the manipulation of logging hierarchies'
+spt::Context currently has some bugs related to the manipulation of logging hierarchies'
 structure post-creation, and dynamic reparenting of contexts shouldn't be used.  Additionally
 `mlog`, the underlying function used for logging, really needs some TLC.
 
@@ -56,4 +56,4 @@ See `include/support/spt-context.h` for the details.
 
 There are other interesting things here, in varying states of bit-rot and and amounts of
 documentation.  Maybe I'll write about them eventually.  Maybe I won't.  But whatever I do,
-don't you hold your breath.
+don't you hold your breath on account of it.
