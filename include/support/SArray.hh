@@ -9,7 +9,11 @@
 
 namespace spt
 {
-  /** Simple array type with basic memory management
+  /** Simple array type with basic memory management.
+   *
+   * SArray ("Simple Array") is a bare-bones implementation of a contiguous-memory object array.
+   * Because we don't expect anyone to extend SArray, no encapsulation functions are provided for the
+   * internal state variables;  we aren't here to protect programmers from themselves, anyway.
    *
    * @tparam _Tp Element type.
    */
@@ -35,6 +39,11 @@ namespace spt
     inline const ValueType* end() const { return data + size; }
 
 
+    /* This method is ugly, but needed sometimes.  I bet the const-removal does some ugly things
+       in the value-type's move constructor when you're not looking, if you're unlucky... :\
+
+       I should probably re-visit that use case and figure out where it came from.
+     */
     ValueType& emplace(const ValueType&& v)
     { return emplace(const_cast<ValueType&&>(v)); }
 
@@ -45,27 +54,29 @@ namespace spt
       return *(data + size - 1);
     }
 
+    /** Ensure that the array can hold at least the given number of items.
+     *
+     * @param reqd_capacity Minimum desired capacity.
+     */
     inline void
     ensure_capacity(size_t reqd_capacity)
     { if ( capacity < reqd_capacity )
 	{
 	  size_t old_capacity ( capacity );
-	  capacity += 2 * (reqd_capacity - capacity);
+
+	  /* Unless current capacity is zero, actual added capacity is twice the difference
+	     (desired - current).  I wonder if there are any use cases where that will lead to
+	     ridiculous memory consumption (probably not).  */
+	  if ( old_capacity > 0 )
+	    capacity += 2 * (reqd_capacity - capacity);
+	  else
+	    capacity = reqd_capacity;
+
 	  data = static_cast<ValueType*>(realloc(data, capacity * sizeof(ValueType)));
 	  memset(data + old_capacity, 0, sizeof(ValueType) * (capacity - old_capacity));
 	} }
 
-
-    static inline ValueType*
-    alloc(size_t count)
-    { return (count > 0 ? static_cast<ValueType*>(malloc(count * sizeof(_Tp))) : nullptr); }
-
-
-    static inline void
-    dealloc(ValueType* ptr)
-    { if ( ptr ) free(ptr); }
-
-
+    /** Clear the contents of the array, but keep the allocated memory. */
     inline void
     clear()
     {
@@ -86,7 +97,7 @@ namespace spt
 
 
     inline SArray(size_t s)
-    : data ( s > 0 ? SArray::alloc(s) : nullptr ),
+    : data ( s > 0 ? static_cast<ValueType*>(malloc(s * sizeof(ValueType))) : nullptr),
       size ( 0 ),
       capacity ( s ),
       owns_data ( true )
@@ -98,7 +109,7 @@ namespace spt
       if ( data && owns_data )
 	{
 	  clear();
-	  dealloc(data);
+	  if ( data ) free(data);
 	  data = nullptr;
 	}
     }
@@ -114,7 +125,10 @@ namespace spt
       sa.owns_data = false;
     }
 
-    /** Constructor for creating an SArray that references static data. */
+    /** Constructor for creating an SArray from a std::initializer_list of the same type.
+     *
+     * @param _data Initializer list to 
+     */
     inline SArray(const std::initializer_list<ValueType>& _data)
       : SArray()
     {
