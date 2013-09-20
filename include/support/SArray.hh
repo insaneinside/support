@@ -25,12 +25,12 @@ namespace spt
 
     /* STL-style accessors */
     inline ValueType& front() { return *data; }
-    inline ValueType& back() { return *(data + size); }
+    inline ValueType& back() { return *(data + size - 1); }
     inline ValueType* begin() { return data; }
     inline ValueType* end() { return data + size; }
 
     inline const ValueType& front() const { return *data; }
-    inline const ValueType& back() const { return *(data + size); }
+    inline const ValueType& back() const { return *(data + size - 1); }
     inline const ValueType* begin() const { return data; }
     inline const ValueType* end() const { return data + size; }
 
