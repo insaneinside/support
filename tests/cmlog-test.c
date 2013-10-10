@@ -161,14 +161,14 @@ do_test(const char* spec)
       cmlog(E2, V_DEBUG, ok);	/* visible */
       timeutil_mark();
 
-      /* should deactivate C, E */
+      /* should deactivate C, E, E2 */
       spt_context_disable(C);
       cmlog(A, V_DEBUG, ok);	/* visible */
       cmlog(B, V_DEBUG, ok);	/* visible */
       cmlog(C, V_DEBUG, err);	/* invisible */
       cmlog(D, V_DEBUG, ok);	/* visible */
       cmlog(E, V_DEBUG, err);	/* invisible */
-      cmlog(E2, V_DEBUG, ok);	/* visible */
+      cmlog(E2, V_DEBUG,err);	/* invisible */
       timeutil_mark();
     }
   timeutil_begin("Destroying contexts");
