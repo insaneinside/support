@@ -9,6 +9,9 @@
 #include <string.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <alloca.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C"
