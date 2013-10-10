@@ -10,7 +10,7 @@
 #define support_RefCountedObject_hh 1
 
 #include <stdexcept>
-#include <cstdint>
+#include <stdint.h>
 #include <cstdlib>
 
 namespace spt
