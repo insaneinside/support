@@ -52,6 +52,17 @@ namespace spt
     {
     }
 
+    Vec(const value_type* values)
+      : _M_val ( )
+#ifdef SPT_VECT_CACHE_MAGNITUDE
+        ,_M_mag_cached(0), _M_recalc_mag(true), _M_mag2_cached(0), _M_recalc_mag2(true)
+#endif
+    {
+      for ( size_type i ( 0 ); i < _N; ++i )
+	_M_val[i] = values[i];
+    }
+
+
     Vec(std::initializer_list<_ValueType> values)
       : _M_val ( )
 #ifdef SPT_VECT_CACHE_MAGNITUDE
