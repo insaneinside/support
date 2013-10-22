@@ -60,6 +60,8 @@ extern "C" {
 
   #define S_POW(a, b) 	powf(a, b)
   #define S_FMOD(a,b)	fmodf(a,b)
+  #define S_FLOOR(a)	floorf(a)
+  #define S_CEIL(a) 	ceilf(a)
 
   #define S_LOG(n)	logf(n)
   #define S_LOG2(n)     log2f(n)
@@ -96,6 +98,8 @@ extern "C" {
 
   #define S_POW(a, b) 	pow(a, b)
   #define S_FMOD(a,b)	fmod(a,b)
+  #define S_FLOOR(a)	floor(a)
+  #define S_CEIL(a) 	ceil(a)
 
   #define S_LOG(n)	log(n)
   #define S_LOG2(n)     log2(n)
@@ -132,6 +136,8 @@ extern "C" {
 
   #define S_POW(a, b) 	powl(a, b)
   #define S_FMOD(a,b)	fmodl(a,b)
+  #define S_FLOOR(a)	floorl(a)
+  #define S_CEIL(a) 	ceill(a)
 
   #define S_EXP(n)	expl(n)
   #define S_EXP2(n)     exp2l(n)
