@@ -76,8 +76,7 @@ namespace spt
 
 
     /** Destructor. */
-    inline virtual
-    ~Vec() {}
+    ~Vec() = default;
 
     Vec&
     operator =(const Vec& other)
