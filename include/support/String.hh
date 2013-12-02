@@ -801,11 +801,15 @@ namespace spt
 
 /** std::hash specialization for spt::String */
 namespace std {
-  template <> struct hash<spt::String> : public __hash_base<size_t, spt::String&>
+  template <> struct hash<spt::String>
   {
     size_t operator()(const spt::String& _s) const noexcept
     {
+#if defined(_LIBCPP_VERSION)
+      return __do_string_hash(_s.data(), _s.data() + _s.length());
+#else
       return std::_Hash_impl::hash(_s.data(), _s.length());
+#endif
     }
   };
 }
