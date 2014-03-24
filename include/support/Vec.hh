@@ -532,13 +532,13 @@ namespace spt
     }
   };
 
-  template < size_t _N, typename _ValueType, typename _FactorType >
-spt::Vec<_N, _ValueType>
-operator*(const _FactorType s, const spt::Vec<_N, _ValueType>& v)
-{
-  static_assert(std::is_arithmetic<_FactorType>::value, "Invalid coefficient type for vector multiplication");
-  return v * s;
-}
+  template < size_t _N = 3, typename _ValueType, typename _FactorType >
+  spt::Vec<_N, _ValueType>
+  operator*(const _FactorType s, const spt::Vec<_N, _ValueType>& v)
+  {
+    /* static_assert(std::is_arithmetic<_FactorType>::value, "Invalid coefficient type for vector multiplication"); */
+    return v * s;
+  }
 }
 #include <ostream>
 
