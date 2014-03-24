@@ -446,7 +446,7 @@ namespace spt
 
     template < typename _VectorType >
     inline value_type
-    dot(const _VectorType& other, scalar_t missingValue = S_LITERAL(0.0)) const
+    dot(const _VectorType& other, value_type missingValue = S_LITERAL(0.0)) const
     {
       value_type o ( 0 );
       for ( size_type i ( 0 ); i < ( S_NONZERO(missingValue) ? std::max(N, _VectorType::N) : std::min(N, _VectorType::N) ); ++i )
