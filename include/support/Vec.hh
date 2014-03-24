@@ -314,14 +314,20 @@ namespace spt
     inline bool
     operator==(const Vec& r) const
     {
-      if ( ( hasNaN() && ! r.hasNaN() )
-	   || ( ! hasNaN() && r.hasNaN() ) )
-	return false;
-
-      for ( size_type i ( 0 ); i < _N; ++i )
-	if ( S_NE(_M_val[i], r._M_val[i]) )
-	  return false;
-
+      if ( std::is_floating_point<value_type>::value )
+	{
+	  if ( ( hasNaN() && ! r.hasNaN() ) || ( ! hasNaN() && r.hasNaN() ) )
+	    return false;
+	  for ( size_type i ( 0 ); i < _N; ++i )
+	    if ( S_NE(_M_val[i], r._M_val[i]) )
+	      return false;
+	}
+      else
+	{
+	  for ( size_type i ( 0 ); i < _N; ++i )
+	    if ( _M_val[i] != r._M_val[i] )
+	      return false;
+	}
       return true;
     }
 
