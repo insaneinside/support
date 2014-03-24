@@ -14,6 +14,12 @@ namespace spt
   template < size_t _N, typename _ValueType = scalar_t >
   class Vec
   {
+  public:
+    typedef  _ValueType value_type;
+    typedef size_t size_type;
+
+    static const size_type N = _N;
+
   protected:
     value_type _M_val[_N];
 
@@ -25,11 +31,6 @@ namespace spt
 #endif
 
   public:
-    typedef  _ValueType value_type;
-    typedef size_t size_type;
-
-    static const size_type N = _N;
-
     inline
     Vec()
       : _M_val { 0 }
