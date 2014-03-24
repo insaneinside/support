@@ -1,6 +1,8 @@
 #ifndef Vec_hh
 #define Vec_hh 1
 
+#include <algorithm>
+#include <cmath>
 #include <type_traits>
 #include <support/scalar.h>
 #include <cstdarg>
