@@ -556,4 +556,10 @@ operator << (std::basic_ostream<char>& os, const spt::Vec<_N, _ValueType>& v)
   return ( os << " }" );
 }
 
+namespace std
+{
+  template < size_t _N, typename _ValueType >
+  struct is_array<spt::Vec<_N, _ValueType> > : std::true_type {};
+}
+
 #endif	/* Vec_hh */
