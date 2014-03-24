@@ -14,6 +14,16 @@ namespace spt
   template < size_t _N, typename _ValueType = scalar_t >
   class Vec
   {
+  protected:
+    value_type _M_val[_N];
+
+#ifdef SPT_VECT_CACHE_MAGNITUDE
+    mutable value_type _M_mag_cached;
+    mutable bool _M_recalc_mag;
+    mutable value_type _M_mag2_cached;
+    mutable bool _M_recalc_mag2;
+#endif
+
   public:
     typedef  _ValueType value_type;
     typedef size_t size_type;
@@ -501,17 +511,6 @@ namespace spt
         }
       return false;
     }
-
-  protected:
-
-    value_type _M_val[_N];
-
-#ifdef SPT_VECT_CACHE_MAGNITUDE
-    mutable value_type _M_mag_cached;
-    mutable bool _M_recalc_mag;
-    mutable value_type _M_mag2_cached;
-    mutable bool _M_recalc_mag2;
-#endif
   };
 
   template < size_t _N, typename _ValueType, typename _FactorType >
