@@ -22,7 +22,7 @@
 namespace spt
 {
   class String;
-};
+}
 
 /**  Shift-append operator for output of a String to an STL stream.
  */
