@@ -54,6 +54,18 @@ namespace spt
     }
 
 
+    template < typename _OtherValueType,
+               typename = typename std::enable_if<std::is_arithmetic<_OtherValueType>::value>::type>
+    Vec(const Vec<_N, _OtherValueType>& v)
+      : _M_val ( )
+#ifdef SPT_VECT_CACHE_MAGNITUDE
+        ,_M_mag_cached(), _M_recalc_mag(true), _M_mag2_cached(0), _M_recalc_mag2(true)
+#endif
+    {
+      for ( size_type i ( 0 ); i < _N; ++i )
+	_M_val[i] = static_cast<value_type>(v.val()[i]);
+    }
+
     template < typename... _S>
     Vec(_S... values)
       : _M_val { static_cast<value_type>(values)... }
