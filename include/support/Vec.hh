@@ -471,31 +471,34 @@ namespace spt
 
     bool isFinite() const
     {
-      static_assert(std::is_floating_point<value_type>::value,
-		    "Invalid use of member ‘isFinite’ on non-floating point Vec type");
-      for ( size_type i ( 0 ); i < _N; ++i )
-	if ( ! std::isfinite(_M_val[i]) )
-	  return false;
+      if ( std::is_floating_point<value_type>::value )
+        {
+          for ( size_type i ( 0 ); i < _N; ++i )
+            if ( ! std::isfinite(_M_val[i]) )
+              return false;
+        }
       return true;
     }
 
     bool hasNaN() const
     {
-      static_assert(std::is_floating_point<value_type>::value,
-		    "Invalid use of member ‘hasNaN’ on non-floating point Vec type");
-      for ( size_type i ( 0 ); i < _N; ++i )
-	if ( std::isnan(_M_val[i]) )
-	  return true;
+      if ( std::is_floating_point<value_type>::value )
+        {
+          for ( size_type i ( 0 ); i < _N; ++i )
+            if ( std::isnan(_M_val[i]) )
+              return true;
+        }
       return false;
     }
       
     bool hasInfinite() const
     {
-      static_assert(std::is_floating_point<value_type>::value,
-		    "Invalid use of member ‘hasInfinite’ on non-floating point Vec type");
-      for ( size_type i ( 0 ); i < _N; ++i )
-	if ( std::fpclassify(_M_val[i]) == FP_INFINITE )
-	  return true;
+      if ( std::is_floating_point<value_type>::value )
+        {
+          for ( size_type i ( 0 ); i < _N; ++i )
+            if ( std::fpclassify(_M_val[i]) == FP_INFINITE )
+              return true;
+        }
       return false;
     }
 
